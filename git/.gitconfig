@@ -1,0 +1,46 @@
+[user]
+	name = Johan Le Bray
+	email = johan.lebray@shopmium.com
+[alias]
+  co = checkout
+  br = branch
+  st = status
+  df = diff -w
+  dc = diff -w --cached
+  log = log -w
+  loc = log -w -p
+  un = reset HEAD
+  sf = flow feature start
+  pf = flow feature publish
+  ff = flow feature finish
+  sr = flow release start
+  fr = flow release finish
+  sh = flow hotfix start
+  fh = flow hotfix finish
+[push]
+  default = simple
+[core]
+	editor = nvim
+  pager = /usr/local/share/git-core/contrib/diff-highlight/diff-highlight | less
+[color]
+	ui = always
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+[color "diff"]
+	commit = green
+	meta = yellow
+	frag = cyan
+	old = red
+	new = green
+	whitespace = red reverse
+[color "status"]
+  header = white
+  added = green
+  changed = cyan bold
+  untracked = magenta bold
+  branch = green bold
+  nobranch = red blink
+
