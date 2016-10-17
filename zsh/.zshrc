@@ -104,32 +104,34 @@ alias dbs='rake db:migrate:status'
 alias dbr='rake db:rollback'
 alias dbd='rake db:migrate:down'
 
+alias paraspec='rake parallel:spec'
+
 alias rs='rails server -b 0.0.0.0 -p 3000'
 alias rc='rails console'
 alias rgm='rails generate migration'
 
 function hstaging() {
-  heroku run $1 -a shopmium-staging
+  heroku run "$@" -a shopmium-staging
 }
 
 function htest() {
-  heroku run $1 -a shopmium-test
+  heroku run "$@" -a shopmium-test
 }
 
 function hprod() {
-  heroku run $1 -a shopmium
+  heroku run "$@" -a shopmium
 }
 
 function hdstaging() {
-  heroku run:detached $1 -a shopmium-staging
+  heroku run:detached "$@" -a shopmium-staging
 }
 
 function hdtest() {
-  heroku run:detached $1 -a shopmium-test
+  heroku run:detached "$@" -a shopmium-test
 }
 
 function hdprod() {
-  heroku run:detached $1 -a shopmium
+  heroku run:detached "$@" -a shopmium
 }
 
 function cbr() {
@@ -147,4 +149,16 @@ function refresh() {
 
 function fgps {
   git push --set-upstream origin $(git_current_branch)
+}
+
+function fbr() {
+  local branches branch
+  branches=$(git branch) &&
+  branch=$(echo "$branches" | fzf +m) &&
+  git checkout $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+}
+
+function prespec() {
+  rake parallel:prepare
+  rake parallel:spec
 }
