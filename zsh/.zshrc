@@ -51,7 +51,7 @@ PROJECT_PATHS=(~/Code)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(brew bundler gem git pj rails rake-fast rbenv sublime)
+plugins=(brew bundler gem git gitfast git-flow pj rails rake-fast rbenv sublime)
 
 
 # User configuration
@@ -93,8 +93,7 @@ eval "$(rbenv init -)"
 alias v='nvim'
 alias gpl='git pull'
 alias gps='git push'
-alias gf='git flow feature start'
-alias gc='git commit -m'
+alias gc='git commit'
 alias gs='git status'
 alias gd='git diff -w'
 alias gco='git co'
@@ -107,8 +106,6 @@ alias dbd='rake db:migrate:down'
 alias paraspec='rake parallel:spec'
 
 alias rs='rails server -b 0.0.0.0 -p 3000'
-alias rc='rails console'
-alias rgm='rails generate migration'
 
 function hstaging() {
   heroku run "$@" -a shopmium-staging
@@ -162,3 +159,8 @@ function prespec() {
   rake parallel:prepare
   rake parallel:spec
 }
+
+#Iterm2 shell integration
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+source ~/.iterm2_shell_integration.`basename $SHELL`
