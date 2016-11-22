@@ -18,6 +18,10 @@ set background=dark
 filetype on
 filetype indent on
 filetype plugin on
+"Dynamically replace
+if exists('&inccommand')
+  set inccommand=split
+endif
 
 "Fzf configuration
 set rtp+=~/.fzf
@@ -75,6 +79,9 @@ Plug 'tpope/vim-vinegar'
 "DB support
 Plug 'ivalkeen/vim-simpledb'
 
+"Silver search
+set grepprg=ag
+
 call plug#end()
 
 let g:seoul256_background = 235
@@ -93,6 +100,11 @@ endfunction
 
 "highlight long lines
 match Error /\%81v.\+/
+
+"Replace searched text
+function Replace(new)
+  exe '%s//' . a:new . '/gc'
+endfunction
 
 " ------- external stuff -------
 set wildmode=list:full,full
@@ -115,8 +127,9 @@ map     <silent> <F5>  :%s/:\([a-zA-Z_]*\)<Space>\+=>/\1:/gc<cr>
 map     <silent> <F6>  :%s/\(\S\+\)<Space><Space>\+\(\S\)/\1<Space>\2/gc<cr>
 map              <F10> :e<Space>~/Code/sandbox.sql<cr>
 map              <F12> :e<Space>~/.config/nvim/init.vim<cr> 
+nnoremap         *     *<c-o>
+map              <c-X> :call Replace("")<left><left>
 set timeoutlen=500 ttimeoutlen=0
-set grepprg=ag
 
 map <up> <nop>
 map <down> <nop>
