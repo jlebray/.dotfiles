@@ -67,6 +67,7 @@ Plug 'tpope/vim-surround'
 Plug 'vim-ruby/vim-ruby'
 Plug 'mhinz/vim-signify'
 Plug 'tpope/vim-rails'
+Plug 'thoughtbot/vim-rspec'
 Plug 'rstacruz/sparkup', {'rtp': 'vim/'}  
 Plug 'junegunn/seoul256.vim'
 Plug 'nelstrom/vim-textobj-rubyblock'
@@ -137,6 +138,12 @@ map              <F12> :e<Space>~/.config/nvim/init.vim<cr>
 nnoremap         *     *<c-o>
 map              <c-X> :call Replace("")<left><left>
 set timeoutlen=500 ttimeoutlen=0
+
+"Rspec
+map <Leader>t :call RunCurrentSpecFile()<CR>
+map <Leader>s :call RunNearestSpec()<CR>
+map <Leader>l :call RunLastSpec()<CR>
+map <Leader>a :call RunAllSpecs()<CR>
 
 "Mac only
 map ® :%s/
