@@ -85,7 +85,13 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-PROMPT='${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[blue]%} % %{$fg_bold[yellow]%}$(rbenv_prompt_info) % %{$reset_color%}'
+function work_in_progress_prompt() {
+  if $(git log -n 1 2>/dev/null | grep -q -c "\-\-wip\-\-"); then
+    echo " | WIP!!"
+  fi
+}
+
+PROMPT='${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} % %{$fg_bold[yellow]%}$(rbenv_prompt_info) % %{$reset_color%}'
 
 eval "$(rbenv init -)"
 
