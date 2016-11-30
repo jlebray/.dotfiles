@@ -16,6 +16,8 @@ set t_Co=256 " Explicitly tell Vim that the terminal supports 256 colors
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 set background=dark
 set ruler
+set splitbelow
+set splitright
 filetype on
 filetype indent on
 filetype plugin on
@@ -115,19 +117,31 @@ set ignorecase
 set smartcase
 set complete=.,w,b,u,t,i
 set lazyredraw
+
+"Bepo keyboard
 map              é     /
 noremap <silent> É     :nohlsearch<cr><c-l>
 map              è     :
 map              à     :q<cr>
 map              È     :!
+
+"tabs
 map              §     :q<cr>
 map              ±     :wq<cr>
 map              K     :tabnext<cr>
 map              J     :tabprev<cr>
+
+"splits
 nnoremap         <c-j> <c-w>j
 nnoremap         <c-k> <c-w>k
 nnoremap         <c-l> <c-w>l
 nnoremap         <c-h> <c-w>h
+nnoremap         <c-J> :split<cr>
+nnoremap         <c-K> :split<cr><c-w>k
+nnoremap         <c-L> :vsplit<cr>
+nnoremap         <c-H> :vsplit<c-w>h
+
+
 map              <F1>  :Files<cr>
 map              <F2>  :tab<Space>new<cr>
 noremap <silent> <F4>  :nohlsearch<cr><c-l>
@@ -148,6 +162,7 @@ map <Leader>a :call RunAllSpecs()<CR>
 "Mac only
 map ® :%s/
 
+"Dont you dare
 map <up> <nop>
 map <down> <nop>
 map <left> <nop>
