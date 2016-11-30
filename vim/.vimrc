@@ -15,6 +15,7 @@ set laststatus=2   " Always show the statusline
 set t_Co=256 " Explicitly tell Vim that the terminal supports 256 colors
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 set background=dark
+set ruler
 filetype on
 filetype indent on
 filetype plugin on
@@ -101,7 +102,7 @@ endfunction
 "highlight long lines
 match Error /\%81v.\+/
 
-"Replace searched text
+"Replace highlighted text
 function Replace(new)
   exe '%s//' . a:new . '/gc'
 endfunction
@@ -118,8 +119,14 @@ noremap <silent> É     :nohlsearch<cr><c-l>
 map              è     :
 map              à     :q<cr>
 map              È     :!
-map              @     :tabnext<cr>
-map              §     :tabnext<cr>
+map              §     :q<cr>
+map              ±     :wq<cr>
+map              K     :tabnext<cr>
+map              J     :tabprev<cr>
+nnoremap         <c-j> <c-w>j
+nnoremap         <c-k> <c-w>k
+nnoremap         <c-l> <c-w>l
+nnoremap         <c-h> <c-w>h
 map              <F1>  :Files<cr>
 map              <F2>  :tab<Space>new<cr>
 noremap <silent> <F4>  :nohlsearch<cr><c-l>
@@ -130,6 +137,9 @@ map              <F12> :e<Space>~/.config/nvim/init.vim<cr>
 nnoremap         *     *<c-o>
 map              <c-X> :call Replace("")<left><left>
 set timeoutlen=500 ttimeoutlen=0
+
+"Mac only
+map ® :%s/
 
 map <up> <nop>
 map <down> <nop>
