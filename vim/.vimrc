@@ -18,6 +18,7 @@ set background=dark
 set ruler
 set splitbelow
 set splitright
+highlight TermCursor ctermfg=red guifg=red
 filetype on
 filetype indent on
 filetype plugin on
@@ -80,11 +81,17 @@ if has("autocmd")
 endif
 Plug 'tpope/vim-vinegar'
 
+"crystal support
+Plug 'rhysd/vim-crystal'
+
 "DB support
 Plug 'ivalkeen/vim-simpledb'
 
 "Silver search
-set grepprg=ag
+Plug 'mileszs/ack.vim'
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
 
 call plug#end()
 
@@ -126,29 +133,18 @@ map              à     :q<cr>
 map              È     :!
 
 "tabs
-map              §     :q<cr>
-map              ±     :wq<cr>
 map              K     :tabnext<cr>
 map              J     :tabprev<cr>
 
 "splits
-nnoremap         <c-j> <c-w>j
-nnoremap         <c-k> <c-w>k
-nnoremap         <c-l> <c-w>l
-nnoremap         <c-h> <c-w>h
-nnoremap         <c-J> :split<cr>
-nnoremap         <c-K> :split<cr><c-w>k
-nnoremap         <c-L> :vsplit<cr>
-nnoremap         <c-H> :vsplit<c-w>h
-
+nnoremap <Leader>j :split<cr>
+nnoremap <Leader>k :split<cr><c-w>k
+nnoremap <Leader>l :vsplit<cr>
+nnoremap <Leader>h :vsplit<c-w>h
 
 map              <F1>  :Files<cr>
 map              <F2>  :tab<Space>new<cr>
 noremap <silent> <F4>  :nohlsearch<cr><c-l>
-map     <silent> <F5>  :%s/:\([a-zA-Z_]*\)<Space>\+=>/\1:/gc<cr>
-map     <silent> <F6>  :%s/\(\S\+\)<Space><Space>\+\(\S\)/\1<Space>\2/gc<cr>
-map              <F10> :e<Space>~/Code/sandbox.sql<cr>
-map              <F12> :e<Space>~/.config/nvim/init.vim<cr> 
 nnoremap         *     *<c-o>
 map              <c-X> :call Replace("")<left><left>
 set timeoutlen=500 ttimeoutlen=0
@@ -156,10 +152,10 @@ set timeoutlen=500 ttimeoutlen=0
 "Rspec
 map <Leader>t :call RunCurrentSpecFile()<CR>
 map <Leader>s :call RunNearestSpec()<CR>
-map <Leader>l :call RunLastSpec()<CR>
-map <Leader>a :call RunAllSpecs()<CR>
 
 "Mac only
+map              §     :q<cr>
+map              ±     :wq<cr>
 map ® :%s/
 
 "Dont you dare
@@ -167,3 +163,49 @@ map <up> <nop>
 map <down> <nop>
 map <left> <nop>
 map <right> <nop>
+
+" Workspace Setup
+" ----------------
+function! DefaultWorkspace()
+  vnew
+  wincmd h
+  e term://zsh
+  sp term://zsh
+  sp term://zsh
+  wincmd k
+  wincmd k
+endfunction
+command! -register DefaultWorkspace call DefaultWorkspace()
+
+au BufEnter * if &buftype == 'terminal' | :startinsert | endif
+
+func! s:moveToSplit(direction)
+  func! s:move(direction)
+    stopinsert
+    execute "wincmd" a:direction
+  endfunc
+
+  execute "tnoremap" "<silent>" "<C-" . a:direction . ">"
+        \ "<C-\\><C-n>"
+        \ ":call <SID>move(\"" . a:direction . "\")<CR>"
+  execute "nnoremap" "<silent>" "<C-" . a:direction . ">"
+          \ ":call <SID>move(\"" . a:direction . "\")<CR>"
+endfunc
+
+for dir in ["h", "j", "l", "k"]
+  call s:moveToSplit(dir)
+endfor
+
+function! OpenCurrentAsNewTab()
+    let l:currentPos = getcurpos()
+    tabedit %
+    call setpos(".", l:currentPos)
+endfunction
+function! CloseCurrentTab()
+    let l:currentPos = getcurpos()
+    tabclose %
+    call setpos(".", l:currentPos)
+endfunction
+nmap <Leader>[ :call OpenCurrentAsNewTab()<CR>
+nmap <Leader>] :call CloseCurrentTab()<CR>
+

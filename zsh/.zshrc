@@ -91,12 +91,13 @@ function work_in_progress_prompt() {
   fi
 }
 
-PROMPT='${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} % %{$fg_bold[yellow]%}$(rbenv_prompt_info) % %{$reset_color%}'
+PROMPT='${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} % %{$fg_bold[green]%}# %{$reset_color%}'
 
 eval "$(rbenv init -)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 alias v='nvim'
+alias vterm='nvim -c DefaultWorkspace'
 alias gpl='git pull'
 alias gps='git push'
 alias gc='git commit'
@@ -112,6 +113,9 @@ alias dbd='rake db:migrate:down'
 alias paraspec='rake parallel:spec'
 
 alias rs='rails server -b 0.0.0.0 -p 3000'
+
+alias light='sudo tee /sys/class/backlight/intel_backlight/brightness <<< '
+alias aur='cd ~/aur/'
 
 function hstaging() {
   heroku run "$@" -a shopmium-staging
