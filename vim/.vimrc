@@ -201,11 +201,6 @@ function! OpenCurrentAsNewTab()
     tabedit %
     call setpos(".", l:currentPos)
 endfunction
-function! CloseCurrentTab()
-    let l:currentPos = getcurpos()
-    tabclose %
-    call setpos(".", l:currentPos)
-endfunction
 nmap <Leader>[ :call OpenCurrentAsNewTab()<CR>
-nmap <Leader>] :call CloseCurrentTab()<CR>
+nmap <Leader>] :tabclose<CR>
 
