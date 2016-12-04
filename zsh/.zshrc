@@ -174,3 +174,4 @@ function prespec() {
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 source ~/.iterm2_shell_integration.`basename $SHELL`
+source /home/johan/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
