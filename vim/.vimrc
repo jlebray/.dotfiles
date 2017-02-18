@@ -67,6 +67,9 @@ endif
 "Delete non empty directories with netrw
 let g:netrw_localrmdir='rm -r'
 
+"Always colorize
+let g:colorizer_nomap = 1
+
 "install vim-plug if not present
 if empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
@@ -94,6 +97,8 @@ Plug 'kana/vim-textobj-user'           "custom blocks
 Plug 'Chiel92/vim-autoformat'          "fast formatting
 Plug 'bronson/vim-trailing-whitespace' "remove whitespaces
 Plug 'jlebray/splitjoin.vim'           "Line splitting
+Plug 'vim-scripts/colorizer'           "RGB colors
+Plug 'Valloric/YouCompleteMe'          "Fuzzy completion
 
 "errors
 Plug 'scrooloose/syntastic'
@@ -246,11 +251,11 @@ endfunction
 command! FormatJSON call FormatJSON()
 
 "tab for completion
-function! Tab_Or_Complete()
-  if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
-    return "\<C-N>"
-  else
-    return "\<Tab>"
-  endif
-endfunction
-inoremap <Tab> <C-R>=Tab_Or_Complete()<CR>
+" function! Tab_Or_Complete()
+"   if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
+"     return "\<C-N>"
+"   else
+"     return "\<Tab>"
+"   endif
+" endfunction
+" inoremap <Tab> <C-R>=Tab_Or_Complete()<CR>
