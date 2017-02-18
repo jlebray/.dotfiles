@@ -1,5 +1,11 @@
+"Vimrc Johan Le Bray
+
+
+" ===== SETTINGS =====
+
 syntax on
 set nu
+set nocompatible
 set tabstop=2
 set shiftwidth=2
 set softtabstop=2
@@ -10,131 +16,156 @@ set history=100
 set expandtab
 set shiftround
 set hlsearch
-set nocompatible " be iMproved
-set laststatus=2   " Always show the statusline
-set t_Co=256 " Explicitly tell Vim that the terminal supports 256 colors
+set relativenumber
+set laststatus=2
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 set background=dark
 set ruler
 set splitbelow
 set splitright
-highlight TermCursor ctermfg=red guifg=red
-filetype on
-filetype indent on
-filetype plugin on
-"Dynamically replace
-if exists('&inccommand')
-  set inccommand=split
-endif
-
-"Fzf configuration
-set rtp+=~/.fzf
-
-filetype off
-
-"Note: install vim-plug if not present
-if empty(glob('~/.vim/autoload/plug.vim'))
-  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall
-endif
-
-"Note: Skip initialization for vim-tiny or vim-small.
-if !1 | finish | endif
-if has('vim_starting')
-  set nocompatible               " Be iMproved
-  " Required:
-  call plug#begin()
-endif
-
-call plug#begin('~/.vim/plugged')
-
-Plug 'powerline/powerline'
-Plug 'powerline/fonts' 
-Plug 'othree/html5.vim'
-Plug 'scrooloose/syntastic'
-"less highlighter
-au BufRead,BufNewFile *.less setfiletype css
-"markdown highlighter
-Plug 'godlygeek/tabular'
-Plug 'plasticboy/vim-markdown'
-" vim-scripts repos
-
-filetype plugin indent on " required!
-
-"ruby support for vim
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-surround'
-Plug 'vim-ruby/vim-ruby'
-Plug 'mhinz/vim-signify'
-Plug 'tpope/vim-rails'
-Plug 'thoughtbot/vim-rspec'
-Plug 'rstacruz/sparkup', {'rtp': 'vim/'}  
-Plug 'junegunn/seoul256.vim'
-Plug 'nelstrom/vim-textobj-rubyblock'
-Plug 'kana/vim-textobj-user'
-set nocompatible
-if has("autocmd")
-  filetype indent plugin on
-endif
-Plug 'tpope/vim-vinegar'
-
-"crystal support
-Plug 'rhysd/vim-crystal'
-
-"DB support
-Plug 'ivalkeen/vim-simpledb'
-
-"Silver search
-Plug 'mileszs/ack.vim'
-if executable('ag')
-  let g:ackprg = 'ag --vimgrep'
-endif
-
-call plug#end()
-
-let g:seoul256_background = 235
-colo seoul256
-
-"Tab for completion
-function! Tab_Or_Complete()
-  if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
-    return "\<C-N>"
-  else
-    return "\<Tab>"
-  endif
-endfunction
-:inoremap <Tab> <C-R>=Tab_Or_Complete()<CR>
-:set dictionary="/usr/dict/words"
-
-"highlight long lines
-match Error /\%81v.\+/
-
-"Replace highlighted text
-function Replace(new)
-  exe '%s//' . a:new . '/gc'
-endfunction
-
-" ------- external stuff -------
+set hidden
+set scrolloff=10
+set visualbell
+set spelllang=fr
 set wildmode=list:full,full
 set wildignorecase
 set ignorecase
 set smartcase
 set complete=.,w,b,u,t,i
 set lazyredraw
+set timeoutlen=500 ttimeoutlen=0
+set thesaurus+=~/.vim/francais_vim.txt
+set rtp+=/usr/local/opt/fzf
+set dictionary="/usr/dict/words"
+if (has("termguicolors"))
+  set termguicolors
+endif
+if exists('&inccommand')
+  set inccommand=split
+endif
 
-"Bepo keyboard
-map              é     /
-noremap <silent> É     :nohlsearch<cr><c-l>
-map              è     :
-map              à     :q<cr>
-map              È     :!
+highlight ExtraWhitespace guibg=#990000 ctermbg=red
+highlight TermCursor ctermfg=red guifg=red
+
+autocmd BufEnter * if &buftype == 'terminal' | :startinsert | endif
+
+autocmd BufRead,BufNewFile *.{arb} set filetype=ruby
+autocmd BufRead,BufNewFile *.{txt,tex} set spell breakindent linebreak
+autocmd BufRead,BufNewFile *.scss.css setfiletype scss
+autocmd BufRead,BufNewFile *.less setfiletype css
+
+"Dynamically replace
+"powerline fonts
+let g:airline_powerline_fonts = 1
+let g:airline_theme='papercolor'
+
+"The silver searcher
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
+
+"Delete non empty directories with netrw
+let g:netrw_localrmdir='rm -r'
+
+"install vim-plug if not present
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall
+endif
+
+
+" ===== GET PLUGINS =====
+
+call plug#begin('~/.vim/plugged')
+
+"File management
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+Plug 'tpope/vim-vinegar'
+
+"tools
+Plug 'tpope/vim-repeat'                "Better repeat
+Plug 'tpope/vim-surround'              "surround verb
+Plug 'tpope/vim-commentary'            "Easy comment
+Plug 'sbdchd/vim-run'                  "Run scripts
+Plug 'junegunn/vim-peekaboo'           "look at registers
+Plug 'kana/vim-textobj-user'           "custom blocks
+Plug 'Chiel92/vim-autoformat'          "fast formatting
+Plug 'bronson/vim-trailing-whitespace' "remove whitespaces
+Plug 'jlebray/splitjoin.vim'           "Line splitting
+
+"errors
+Plug 'scrooloose/syntastic'
+
+"Git
+Plug 'tpope/vim-fugitive'
+Plug 'mhinz/vim-signify'
+
+"HTML
+Plug 'othree/html5.vim'
+Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
+
+"Ruby
+Plug 'vim-ruby/vim-ruby'
+Plug 'tpope/vim-rails'
+Plug 'thoughtbot/vim-rspec'
+Plug 'nelstrom/vim-textobj-rubyblock'
+
+"Coffee
+Plug 'kchmck/vim-coffee-script'
+
+"Crystal
+Plug 'rhysd/vim-crystal'
+
+"Markdown
+Plug 'plasticboy/vim-markdown'
+
+"DB
+Plug 'ivalkeen/vim-simpledb'
+
+"Writing
+Plug 'dbmrq/vim-ditto'
+Plug 'junegunn/goyo.vim'
+Plug 'reedes/vim-pencil'
+
+"Themes
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'junegunn/seoul256.vim'
+Plug 'colepeters/spacemacs-theme.vim'
+Plug 'NLKNguyen/papercolor-theme'
+
+call plug#end()
+
+
+" ===== APPLY THEME =====
+
+"let g:seoul256_background = 235
+"colorscheme seoul256
+colorscheme spacemacs-theme
+"colorscheme PaperColor
+
+
+" ===== MAPPINGS =====
+
+"Leader = Spacebar
+let mapleader = " "
+
+"switch ; and :
+nnoremap ; :
+nnoremap : ;
+vnoremap ; :
+vnoremap : ;
+
+"Move between visual lines BUT keep correct count
+nnoremap <expr> j v:count ? 'j' : 'gj'
+nnoremap <expr> k v:count ? 'k' : 'gk'
 
 "tabs
-map              K     :tabnext<cr>
-map              J     :tabprev<cr>
+nnoremap K     :tabnext<cr>
+nnoremap J     :tabprev<cr>
+nnoremap <c-n> J
 
 "splits
 nnoremap <Leader>j :split<cr>
@@ -142,43 +173,47 @@ nnoremap <Leader>k :split<cr><c-w>k
 nnoremap <Leader>l :vsplit<cr>
 nnoremap <Leader>h :vsplit<c-w>h
 
-map              <F1>  :Files<cr>
-map              <F2>  :tab<Space>new<cr>
-noremap <silent> <F4>  :nohlsearch<cr><c-l>
+"Open previous file
+nnoremap <tab> <C-^>
+
+"Save
+nnoremap <Leader>s :w<cr>
+
+"Run current file
+nnoremap <leader>e :Run<cr>
+
+"Copy to clipboard
+vnoremap <leader>y "+y
+
+"jump between errors
+let g:syntastic_always_populate_loc_list = 1
+nnoremap [e :lprev<cr>
+nnoremap ]e :lnext<cr>
+
+"Fuzzy finder configuration
+let g:fzf_files_options = '--preview "(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'"'
+nnoremap              <F1>  :Files<cr>
+nnoremap              <F2>  :tab<Space>new<cr>
+
+"Remove search highlighting
+nnoremap <silent>     <F4>  :nohlsearch<cr><c-l>
 nnoremap         *     *<c-o>
-map              <c-X> :call Replace("")<left><left>
-set timeoutlen=500 ttimeoutlen=0
 
 "Rspec
-map <Leader>t :call RunCurrentSpecFile()<CR>
-map <Leader>s :call RunNearestSpec()<CR>
+nnoremap <Leader>t :call RunCurrentSpecFile()<CR>
+
+"Tags
+nnoremap <F5> :ts<Space>
+
+"Formating
+nnoremap <F3> :Autoformat<CR>
+nnoremap <Leader>w :FixWhitespace<CR>
 
 "Mac only
-map              §     :q<cr>
-map              ±     :wq<cr>
-map ® :%s/
+nnoremap § :q<cr>
+nnoremap ± :qa!<cr>
 
-"Dont you dare
-map <up> <nop>
-map <down> <nop>
-map <left> <nop>
-map <right> <nop>
-
-" Workspace Setup
-" ----------------
-function! DefaultWorkspace()
-  vnew
-  wincmd h
-  e term://zsh
-  sp term://zsh
-  sp term://zsh
-  wincmd k
-  wincmd k
-endfunction
-command! -register DefaultWorkspace call DefaultWorkspace()
-
-au BufEnter * if &buftype == 'terminal' | :startinsert | endif
-
+"Move between splits
 func! s:moveToSplit(direction)
   func! s:move(direction)
     stopinsert
@@ -189,18 +224,33 @@ func! s:moveToSplit(direction)
         \ "<C-\\><C-n>"
         \ ":call <SID>move(\"" . a:direction . "\")<CR>"
   execute "nnoremap" "<silent>" "<C-" . a:direction . ">"
-          \ ":call <SID>move(\"" . a:direction . "\")<CR>"
+        \ ":call <SID>move(\"" . a:direction . "\")<CR>"
 endfunc
 
 for dir in ["h", "j", "l", "k"]
   call s:moveToSplit(dir)
 endfor
 
+"Open file in new tab
 function! OpenCurrentAsNewTab()
-    let l:currentPos = getcurpos()
-    tabedit %
-    call setpos(".", l:currentPos)
+  let l:currentPos = getcurpos()
+  tabedit %
+  call setpos(".", l:currentPos)
 endfunction
 nmap <Leader>[ :call OpenCurrentAsNewTab()<CR>
-nmap <Leader>] :tabclose<CR>
 
+"Format JSON
+function! FormatJSON()
+  %!python -m json.tool
+endfunction
+command! FormatJSON call FormatJSON()
+
+"tab for completion
+function! Tab_Or_Complete()
+  if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
+    return "\<C-N>"
+  else
+    return "\<Tab>"
+  endif
+endfunction
+inoremap <Tab> <C-R>=Tab_Or_Complete()<CR>
