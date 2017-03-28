@@ -51,8 +51,7 @@ PROJECT_PATHS=(~/Code)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(brew bundler gem git gitfast git-flow pj rails rake-fast rbenv sublime)
-
+plugins=(brew bundler gem git gitfast git-flow pj rails rake-fast rbenv sublime zsh-syntax-highlighting colorize osx thefuck)
 
 # User configuration
 
@@ -91,7 +90,7 @@ function work_in_progress_prompt() {
   fi
 }
 
-PROMPT='${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} % %{$fg_bold[green]%}# %{$reset_color%}'
+PROMPT='${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} % %{$fg_bold[yellow]%}$(rbenv_prompt_info) % %{$reset_color%}'
 
 eval "$(rbenv init -)"
 
@@ -114,8 +113,7 @@ alias paraspec='rake parallel:spec'
 
 alias rs='rails server -b 0.0.0.0 -p 3000'
 
-alias light='sudo tee /sys/class/backlight/intel_backlight/brightness <<< '
-alias aur='cd ~/aur/'
+alias emacs='emacs'
 
 function hstaging() {
   heroku run "$@" -a shopmium-staging
@@ -141,28 +139,110 @@ function hdprod() {
   heroku run:detached "$@" -a shopmium
 }
 
+function rcstaging() {
+  heroku run rails console -a shopmium-staging
+}
+
+function rctest() {
+  heroku run rails console -a shopmium-test
+}
+
+function rcprod() {
+  heroku run rails console -a shopmium
+}
+
 function cbr() {
   git_current_branch
 }
 
 function refresh() {
   local CURRENT=$(git_current_branch)
+  gwip
   git checkout develop
   git pull
   git checkout master
   git pull
   git checkout $CURRENT
+  gunwip
 }
 
 function fgps {
   git push --set-upstream origin $(git_current_branch)
 }
 
-function fbr() {
+# function fbr() {
+#   local branches branch
+#   branches=$(git branch -a) &&
+#     branch=$(echo "$branches" | sed -E "s/.*((develop|master|remotes|origin|feature)[a-zA-Z0-9/-]*).*/\1/" | fzf +s +m -e) &&
+#   git checkout $(echo "$branch" | sed "s:.* remotes/origin/::" | sed "s:.* ::")
+# }
+
+# fbr - checkout git branch
+fbr() {
   local branches branch
-  branches=$(git branch) &&
-  branch=$(echo "$branches" | fzf +m) &&
-  git checkout $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+  branches=$(git branch --all | grep -v HEAD) &&
+  branch=$(echo "$branches" |
+           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+  git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+}
+
+# fco - checkout git branch/tag
+fco() {
+  local tags branches target
+  tags=$(
+    git tag | awk '{print "\x1b[31;1mtag\x1b[m\t" $1}') || return
+  branches=$(
+    git branch --all | grep -v HEAD             |
+    sed "s/.* //"    | sed "s#remotes/[^/]*/##" |
+    sort -u          | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
+  target=$(
+    (echo "$tags"; echo "$branches") |
+    fzf-tmux -l30 -- --no-hscroll --ansi +m -d "\t" -n 2) || return
+  git checkout $(echo "$target" | awk '{print $2}')
+}
+
+# fshow - git commit browser (enter for show, ctrl-d for diff, ctrl-r for reset, ` toggles sort)
+fshow() {
+  local out shas sha q k
+  while out=$(
+      git log --color=always \
+        --format="%C(auto)%h%d %s %C(black)%C(bold)%cr %C(red)%an" "$@" |
+      fzf --ansi --multi --no-sort --reverse --query="$q" --tiebreak=index \
+          --print-query --expect=ctrl-d,ctrl-r --toggle-sort=\`); do
+    q=$(head -1 <<< "$out")
+    k=$(head -2 <<< "$out" | tail -1)
+    shas=$(sed '1,2d;s/^[^a-z0-9]*//;/^$/d' <<< "$out" | awk '{print $1}')
+    [ -z "$shas" ] && continue
+    if [ "$k" = 'ctrl-d' ]; then
+      git diff --color=always $shas | less -R
+    elif [ "$k" = 'ctrl-r' ]; then
+      git reset $shas
+    else
+      for sha in $shas; do
+        git show --color=always $sha | less -R
+      done
+    fi
+  done
+}
+
+# ftags - search ctags
+ftags() {
+  local line
+  [ -e tags ] &&
+  line=$(
+    awk 'BEGIN { FS="\t" } !/^!/ {print toupper($4)"\t"$1"\t"$2"\t"$3}' tags |
+    cut -c1-80 | fzf --nth=1,2
+  ) && $EDITOR $(cut -f3 <<< "$line") -c "set nocst" \
+                                      -c "silent tag $(cut -f2 <<< "$line")"
+}
+
+# fe [FUZZY PATTERN] - Open the selected file with the default editor
+#   - Bypass fuzzy finder if there's only one match (--select-1)
+#   - Exit if there's no match (--exit-0)
+fe() {
+  local file
+  file=$(fzf-tmux --query="$1" --select-1 --exit-0)
+  [ -n "$file" ] && ${EDITOR:-vim} "$file"
 }
 
 function prespec() {
@@ -170,8 +250,26 @@ function prespec() {
   rake parallel:spec
 }
 
-#Iterm2 shell integration
-#test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-#
+function replace_all() {
+  ag -l "$1" | xargs perl -pi -E "s/$1/$2/g"
+}
+
+function pjson {
+    if [ $# -gt 0 ];
+        then
+        for arg in $@
+        do
+            if [ -f $arg ];
+                then
+                less $arg | python -m json.tool
+            else
+                echo "$arg" | python -m json.tool
+            fi
+        done
+    fi
+}
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+#iterm2 shell
 #source ~/.iterm2_shell_integration.`basename $SHELL`
-source /home/johan/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
