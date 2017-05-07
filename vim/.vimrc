@@ -1,41 +1,42 @@
 "Vimrc Johan Le Bray
-" ===== SETTINGS =====
-
+" {{{ ===== SETTINGS
 syntax on
-set number
-set relativenumber
-set tabstop=2
-set shiftwidth=2
-set softtabstop=2
-set cursorline
-set smarttab
 set autoindent
-set history=100
+set complete=.,w,b,u,t,i
+set cursorline
+set dictionary="/usr/dict/words"
 set expandtab
-set shiftround
-set hlsearch
-set laststatus=2
-set runtimepath^=~/.vim/bundle/ctrlp.vim
-set title
-set ruler
-set splitbelow
-set splitright
+set foldmethod=marker
 set hidden
+set history=100
+set hlsearch
+set ignorecase
+set laststatus=2
+set lazyredraw
+set mouse=a
 set nobackup
 set noswapfile
-set scrolloff=10
-set visualbell
-set wildmode=list:full,full
-set wildignorecase
-set ignorecase
-set smartcase
-set complete=.,w,b,u,t,i
-set lazyredraw
-set timeoutlen=500 ttimeoutlen=0
-set spelllang=fr
-set thesaurus+=~/.vim/francais_vim.txt
+set number
+set relativenumber
 set rtp+=/usr/local/opt/fzf
-set dictionary="/usr/dict/words"
+set ruler
+set runtimepath^=~/.vim/bundle/ctrlp.vim
+set scrolloff=10
+set shiftround
+set shiftwidth=2
+set smartcase
+set smarttab
+set softtabstop=2
+set spelllang=fr
+set splitbelow
+set splitright
+set tabstop=2
+set thesaurus+=~/.vim/francais_vim.txt
+set timeoutlen=500 ttimeoutlen=0
+set title
+set visualbell
+set wildignorecase
+set wildmode=list:full,full
 if (has("termguicolors"))
   set termguicolors
 endif
@@ -43,14 +44,16 @@ if exists('&inccommand')
   set inccommand=split
 endif
 
-
-autocmd BufEnter * if &buftype == 'terminal' | :startinsert | endif
-
 autocmd BufRead,BufNewFile *.{arb} set filetype=ruby
-autocmd BufRead,BufNewFile *.{txt,tex} set spell breakindent linebreak
+autocmd BufRead,BufNewFile *.{ecr} set filetype=html
+autocmd BufRead,BufNewFile *.{tex} set spell breakindent linebreak
 autocmd BufRead,BufNewFile *.scss.css setfiletype scss
 autocmd BufRead,BufNewFile *.less setfiletype css
 
+" }}}
+" {{{ ===== PLUGINS
+
+" {{{ Options
 let g:airline_powerline_fonts = 1    "powerline fonts
 let g:airline_theme='base16_spacemacs'     "powerline fonts
 if executable('ag')
@@ -58,7 +61,6 @@ if executable('ag')
 endif
 let g:netrw_localrmdir='rm -r'       "Delete non empty directories with netrw
 let g:windowswap_map_keys = 0        "prevent default bindings
-let g:splitjoin_ruby_hanging_args = 0 "correct ruby split
 
 "Surround
 let g:surround_no_insert_mappings = 1
@@ -69,16 +71,51 @@ let g:surround_61 = "<%= \r %>"
 "deoplete
 let g:deoplete#enable_at_startup=1
 let g:deoplete#auto_completion_start_length=2
-inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
+let g:deoplete#ignore_sources = {}
+let g:deoplete#ignore_sources._ = ["neosnippet"]
+function! s:neosnippet_complete()
+  if neosnippet#expandable_or_jumpable()
+    return "\<Plug>(neosnippet_expand_or_jump)"
+  else
+    if pumvisible()
+      return "\<c-n>"
+    else
+      return "\<tab>"
+    endif
+  endif
+endfunction
 
+imap <expr><TAB> <SID>neosnippet_complete()
+
+"multi cursors
+let g:multi_cursor_use_default_mapping=0
+let g:multi_cursor_next_key='<C-b>'
+let g:multi_cursor_prev_key='<C-p>'
+let g:multi_cursor_skip_key='<C-x>'
+let g:multi_cursor_quit_key='<Esc>'
+
+"argwrap
+let g:argwrap_padded_braces = '{'
+let g:argwrap_tail_comma_braces = '[{'
+
+"neoterm
+let g:neoterm_position = 'vertical'
+
+"neomake
+let g:neomake_ruby_enabled_makers = ["rubocop"]
+let g:neomake_json_enabled_makers = ["jsonlint"]
+let g:ruby_doc_command='open'
+autocmd! BufWritePost * Neomake
+
+" }}}
+
+" {{{ Sources
 "install vim-plug if not present
 if empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
         \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   autocmd VimEnter * PlugInstall
 endif
-
-" ===== GET PLUGINS =====
 
 call plug#begin('~/.vim/plugged')
 
@@ -93,36 +130,45 @@ Plug 'tpope/vim-repeat'                "Better repeat
 Plug 'tpope/vim-surround'              "surround verb
 Plug 'tpope/vim-commentary'            "Easy comment
 Plug 'sbdchd/vim-run'                  "Run scripts
-Plug 'junegunn/vim-peekaboo'           "look at registers
 Plug 'junegunn/vim-easy-align'         "easy align
 Plug 'kana/vim-textobj-user'           "custom blocks
 Plug 'bronson/vim-trailing-whitespace' "remove whitespaces
-Plug 'AndrewRadev/splitjoin.vim'       "Line splitting
+Plug 'FooSoft/vim-argwrap'             "Line splitting
 Plug 'tpope/vim-endwise'               "smart ends
-Plug 'wesQ3/vim-windowswap'            "swap splits
 Plug 'tommcdo/vim-exchange'            "cx/X to exchange
 Plug 'adelarsq/vim-matchit'            "Better % match
 Plug 'tpope/vim-abolish'               "Smart replace with :S
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' } "Fuzzy completion
+Plug 'terryma/vim-multiple-cursors'
+Plug 'sheerun/vim-polyglot'
+Plug 'kshenoy/vim-signature'
+Plug 'kassio/neoterm'                  "Fast access to terminal
+Plug 'wellle/targets.vim'              "Improve text objects
+Plug 'AndrewRadev/splitjoin.vim'
+
+"snippets
+Plug 'Shougo/neosnippet'
+Plug 'jlebray/snippets'
 
 "errors
-Plug 'scrooloose/syntastic'
+Plug 'neomake/neomake'
 
 "Git
-Plug 'tpope/vim-fugitive'
+Plug 'lambdalisue/gina.vim' "Git in vim
+Plug 'tpope/vim-fugitive'   "Keep for blame
 Plug 'mhinz/vim-signify'
 
 "HTML
 Plug 'othree/html5.vim'
 Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
 Plug 'cakebaker/scss-syntax.vim'
+Plug 'vim-scripts/liquid.vim'          "Liquid syntax
 
 "Ruby
 Plug 'vim-ruby/vim-ruby'
-Plug 'tpope/vim-rails'
-Plug 'janko-m/vim-test'
 Plug 'nelstrom/vim-textobj-rubyblock'
-Plug 'ecomba/vim-ruby-refactoring'
+Plug 'lucapette/vim-ruby-doc'
+Plug 'tpope/vim-rails'
 
 "Coffee
 Plug 'kchmck/vim-coffee-script'
@@ -148,16 +194,14 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'junegunn/seoul256.vim'
 Plug 'jlebray/spacemacs-theme.vim'
 Plug 'NLKNguyen/papercolor-theme'
-Plug 'jlebray/focused.vim'
 Plug 'pgdouyon/vim-yin-yang'
 Plug 'ewilazarus/preto'
 Plug 'crusoexia/vim-dream'
 
 call plug#end()
-
-
-" ===== APPLY THEME =====
-
+" }}}
+" }}}
+" {{{ ===== THEME
 set background=dark
 " let g:seoul256_background = 233
 " colorscheme seoul256
@@ -170,14 +214,10 @@ colorscheme spacemacs-theme
 highlight ExtraWhitespace guibg=#990000 ctermbg=red
 highlight TermCursor ctermfg=red guifg=red
 
-" ===== MAPPINGS =====
-
+" }}}
+" {{{ ===== MAPPINGS
 "Leader = Spacebar
 let mapleader = " "
-
-"ESC on jj
-inoremap jj <ESC>
-inoremap jk <ESC>
 
 "Move between visual lines BUT keep correct count
 nnoremap <expr> j v:count ? 'j' : 'gj'
@@ -185,6 +225,11 @@ nnoremap <expr> k v:count ? 'k' : 'gk'
 vnoremap <expr> j v:count ? 'j' : 'gj'
 vnoremap <expr> k v:count ? 'k' : 'gk'
 
+"Keep selection when indenting
+vnoremap < <gv
+vnoremap > >gv
+
+"J is used to switch tabs, so use C-n to join lines
 nnoremap <c-n> J
 
 "Run current file
@@ -193,27 +238,26 @@ nnoremap <leader>e :Run<cr>
 "Copy to clipboard
 vnoremap <leader>y "+y
 
+nmap Y y$
+
 "files
-nnoremap <leader>fs  :w<cr>
-nnoremap <leader>fe  :Run<cr>
-nnoremap <leader>ff  :Files<cr>
-nnoremap <leader>fr  :Move <c-R>%
-nnoremap <leader>fd  :Remove<cr>
-nnoremap <leader>fsw :SudoWrite <c-R>%<cr>
+nnoremap <leader>s  :w<cr>
+nnoremap <leader>f  :Files<cr>
+nnoremap <leader>r  :Move <c-R>%
+nnoremap <leader>x  :Remove<cr>
+nnoremap <leader>n  :Ag<cr>
 
 "Buffers
-nnoremap <leader>bf :Buffers<cr>
+nnoremap <leader>b :Buffers<cr>
 nnoremap <tab> <C-^>
+nnoremap <leader>/ :BLines<cr>
 
 "Window
-nnoremap <silent> <leader>wv :vsplit<cr>
-nnoremap <silent> <leader>ws :split<cr>
-nnoremap <silent> <leader>wd :q<cr>
-nnoremap <silent> <leader>wh :wincmd h<cr>
-nnoremap <silent> <leader>wj :wincmd j<cr>
-nnoremap <silent> <leader>wk :wincmd k<cr>
-nnoremap <silent> <leader>wl :wincmd l<cr>
-nnoremap <silent> <leader>ww :call WindowSwap#EasyWindowSwap()<CR>
+nnoremap <silent> <leader>1 :only<cr>
+nnoremap <silent> <leader>2 :vsplit<cr>
+nnoremap <silent> <leader>3 :split<cr>
+nnoremap <silent> <leader>d :q<cr>
+nnoremap <silent> <leader>ws :call WindowSwap#EasyWindowSwap()<CR>
 
 "Tabs
 nnoremap <leader>tn :tabnew<cr>
@@ -228,25 +272,14 @@ nnoremap <leader>js gS
 nnoremap <leader>jj gS
 
 "Align
-xmap ga <Plug>(EasyAlign)
-nmap ga <Plug>(EasyAlign)
+xmap ga <Plug>(LiveEasyAlign)
+nmap ga <Plug>(LiveEasyAlign)
 
-"Git fugitive
-nnoremap <leader>gpl :Gpull<cr>
-nnoremap <leader>gps :Gpush<cr>
-nnoremap <leader>gbl :Gblame<cr>
-nnoremap <leader>gs  :Gstatus<cr>
-nnoremap <leader>gl  :Git log --oneline --decorate --color --graph<cr>
-nnoremap <leader>gc  :Gcommit<cr>
-nnoremap <leader>gmv :Gmove<cr>
-nnoremap <leader>grm :Gremove<cr>
-nnoremap <leader>gco :Gread<cr>
-nnoremap <leader>ga  :Gwrite<cr>
-nnoremap <leader>gbf :Git checkout feature/
-nnoremap <leader>gbd :Git checkout develop<cr>
-nnoremap <leader>gbm :Git checkout master<cr>
-nnoremap <leader>gd  :Git diff<cr>
-nnoremap <leader>gds :Git diff --staged<cr>
+"Git
+nnoremap <leader>gs  :Gina status<cr>
+nnoremap <leader>gc  :Gina commit<cr>
+nnoremap <leader>gp  :Gina push<cr>
+nnoremap <leader>gb  :Gblame<cr>
 
 "Vim
 nnoremap <leader>vr :source ~/.vimrc<cr>
@@ -265,15 +298,9 @@ nnoremap <leader>nd :DeleteNote!<cr>
 nnoremap <leader>ns :SearchNotes<space>
 vnoremap <leader>n  :NoteFromSelectedText<cr>
 
-"Specs
-nnoremap <Leader>sf :TestFile<CR>
-nnoremap <Leader>st :TestNearest<CR>
-nnoremap <Leader>sl :TestLast<CR>
-nnoremap <Leader>ss :TestSuite<CR>
-nnoremap <Leader>se :TestVisit<CR>
-
 "Misc
 nnoremap <silent> <leader>h :nohlsearch<cr><c-l>
+nnoremap <silent> <leader>l :ArgWrap<CR>
 
 "jump between errors
 let g:syntastic_always_populate_loc_list = 1
@@ -284,23 +311,18 @@ nnoremap ]e :lnext<cr>
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
 let g:fzf_files_options =
   \ '--preview "(coderay {} || cat {}) 2> /dev/null | head -'.&lines.'"'
-nnoremap <F1> :Files<cr>
-nnoremap <F2> :tabnew<cr>
 
 "Remove search highlighting
-nnoremap         *     *<c-o>
+nnoremap * *<c-o>
 
 "Tags
-nnoremap <F5> :ts<Space>
+nnoremap <F5> :Tags<cr>
 
-"Formating
-nnoremap <F3> :Buffers<CR>
 nnoremap <Leader>w :FixWhitespace<CR>
+nnoremap <leader><leader> :T<space>
 
-"Mac only
-nnoremap § :q<cr>
-nnoremap ± :qa!<cr>
-
+" }}}
+" {{{ ===== MISC
 "Move between splits
 func! s:moveToSplit(direction)
   func! s:move(direction)
@@ -325,14 +347,8 @@ function! FormatJSON()
 endfunction
 command! FormatJSON call FormatJSON()
 
-" ===== LAYERS =====
-
-"Writing
-nnoremap <leader>mws :Goyo 100<cr>:HardPencil<cr>:set spell<cr>
-nnoremap <leader>mwq :Goyo<cr>:NoPencil<cr>:set nospell<cr>
-
-" ===== CUSTOM BLOCKS =====
-
+" }}}
+" {{{ ===== CUSTOM BLOCKS
 call textobj#user#plugin('erb', {
 \   'code': {
 \     'pattern': ['<%', '%>'],
@@ -369,3 +385,4 @@ function! CurrentLineI()
   \ ? ['v', head_pos, tail_pos]
   \ : 0
 endfunction
+" }}}

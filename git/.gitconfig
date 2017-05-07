@@ -10,6 +10,11 @@
   log = log -w
   loc = log -w -p
   un = reset HEAD
+  tags = tag -l
+  branches = branch -a
+  remotes = remote -v
+[fetch]
+  prune = true
 [push]
   default = simple
 [core]
@@ -34,7 +39,6 @@
   untracked = magenta bold
   branch = green bold
   nobranch = red blink
-
 [merge]
 	tool = vimdiff3
 [mergetool]
