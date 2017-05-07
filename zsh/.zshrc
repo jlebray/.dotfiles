@@ -1,5 +1,6 @@
 # Path to your oh-my-zsh installation.
 export ZSH=/Users/johan/.oh-my-zsh
+export EDITOR=`which nvim`
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -13,23 +14,6 @@ ZSH_THEME="agnoster"
 # Uncomment the following line to use hyphen-insensitive completion. Case
 # sensitive completion must be off. _ and - will be interchangeable.
 HYPHEN_INSENSITIVE="true"
-
-# Uncomment the following line to disable bi-weekly auto-update checks.
-# DISABLE_AUTO_UPDATE="true"
-
-# Uncomment the following line to change how often to auto-update (in days).
-# export UPDATE_ZSH_DAYS=13
-
-# Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
-
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
-
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
-
-# Uncomment the following line to display red dots whilst waiting for completion.
 COMPLETION_WAITING_DOTS="true"
 
 # Uncomment the following line if you want to disable marking untracked files
@@ -51,7 +35,7 @@ PROJECT_PATHS=(~/Code)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(brew bundler gem git gitfast git-flow pj rails rake-fast rbenv sublime zsh-syntax-highlighting colorize osx thefuck)
+plugins=(brew bundler gem git gitfast git-flow pj rails rake-fast rbenv sublime zsh-syntax-highlighting colorize osx)
 
 # User configuration
 
@@ -90,7 +74,8 @@ function work_in_progress_prompt() {
   fi
 }
 
-PROMPT='${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} % %{$fg_bold[yellow]%}$(rbenv_prompt_info) % %{$reset_color%}'
+PROMPT='%{$fg_bold[green]%}$(git_prompt_info)${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} %{$reset_color%}'
+RPROMPT='%{$fg_bold[blue]%}ruby-$(rbenv_prompt_info) % %{$reset_color%}'
 
 eval "$(rbenv init -)"
 
@@ -100,7 +85,7 @@ alias vterm='nvim -c DefaultWorkspace'
 alias gpl='git pull'
 alias gps='git push'
 alias gc='git commit'
-alias gs='git status'
+alias gs='git status --short'
 alias gd='git diff -w'
 alias gco='git co'
 
@@ -109,11 +94,13 @@ alias dbs='rake db:migrate:status'
 alias dbr='rake db:rollback'
 alias dbd='rake db:migrate:down'
 
-alias paraspec='rake parallel:spec'
+alias fzf='fzf --height 80%'
 
 alias rs='rails server -b 0.0.0.0 -p 3000'
 
-alias emacs='emacs'
+function clean_old_branches() {
+  git branch --no-color -vv | awk '/: gone]/{print $1}' | xargs git branch -D
+}
 
 function hstaging() {
   heroku run "$@" -a shopmium-staging
@@ -151,31 +138,24 @@ function rcprod() {
   heroku run rails console -a shopmium
 }
 
-function cbr() {
-  git_current_branch
-}
-
 function refresh() {
   local CURRENT=$(git_current_branch)
-  gwip
-  git checkout develop
-  git pull
-  git checkout master
-  git pull
-  git checkout $CURRENT
-  gunwip
+  if [ "$CURRENT" = 'develop' -o "$CURRENT" = 'master' ]; then
+    echo "You are on $fg_bold[green]$CURRENT$reset_color, nothing done"
+  else
+    gwip
+    git checkout develop
+    git pull
+    git checkout master
+    git pull
+    git checkout $CURRENT
+    gunwip
+  fi
 }
 
 function fgps {
   git push --set-upstream origin $(git_current_branch)
 }
-
-# function fbr() {
-#   local branches branch
-#   branches=$(git branch -a) &&
-#     branch=$(echo "$branches" | sed -E "s/.*((develop|master|remotes|origin|feature)[a-zA-Z0-9/-]*).*/\1/" | fzf +s +m -e) &&
-#   git checkout $(echo "$branch" | sed "s:.* remotes/origin/::" | sed "s:.* ::")
-# }
 
 # fbr - checkout git branch
 fbr() {
@@ -245,6 +225,10 @@ fe() {
   [ -n "$file" ] && ${EDITOR:-vim} "$file"
 }
 
+git_cleanup() {
+  git fetch -p && git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D
+}
+
 function prespec() {
   rake parallel:prepare
   rake parallel:spec
@@ -254,19 +238,24 @@ function replace_all() {
   ag -l "$1" | xargs perl -pi -E "s/$1/$2/g"
 }
 
-function pjson {
-    if [ $# -gt 0 ];
-        then
-        for arg in $@
-        do
-            if [ -f $arg ];
-                then
-                less $arg | python -m json.tool
-            else
-                echo "$arg" | python -m json.tool
-            fi
-        done
-    fi
+function waiton() {
+  pid=$1
+  me="$(basename $0)($$):"
+  if [ -z "$pid" ]
+  then
+    echo "$me a PID is required as an argument" >&2
+    exit 2
+  fi
+
+  name=$(ps -p $pid -o comm=)
+  if [ $? -eq 0 ]
+  then
+    echo "$me waiting for PID $pid to finish ($name)"
+    while ps -p $pid > /dev/null; do sleep 1; done;
+  else
+    echo "$me failed to find process with PID $pid" >&2
+    exit 1
+  fi
 }
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
