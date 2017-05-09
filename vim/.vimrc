@@ -51,173 +51,11 @@ autocmd BufRead,BufNewFile *.scss.css setfiletype scss
 autocmd BufRead,BufNewFile *.less setfiletype css
 
 " }}}
-" {{{ ===== PLUGINS
-
-" {{{ Options
-let g:airline_powerline_fonts = 1    "powerline fonts
-let g:airline_theme='base16_spacemacs'     "powerline fonts
-if executable('ag')
-  let g:ackprg = 'ag --vimgrep'      "The silver searcher
-endif
-let g:netrw_localrmdir='rm -r'       "Delete non empty directories with netrw
-let g:windowswap_map_keys = 0        "prevent default bindings
-
-"Surround
-let g:surround_no_insert_mappings = 1
-let g:surround_35 = "<%# \r %>"
-let g:surround_37 = "<% \r %>"
-let g:surround_61 = "<%= \r %>"
-
-"deoplete
-let g:deoplete#enable_at_startup=1
-let g:deoplete#auto_completion_start_length=2
-let g:deoplete#ignore_sources = {}
-let g:deoplete#ignore_sources._ = ["neosnippet"]
-function! s:neosnippet_complete()
-  if neosnippet#expandable_or_jumpable()
-    return "\<Plug>(neosnippet_expand_or_jump)"
-  else
-    if pumvisible()
-      return "\<c-n>"
-    else
-      return "\<tab>"
-    endif
-  endif
-endfunction
-
-imap <expr><TAB> <SID>neosnippet_complete()
-
-"multi cursors
-let g:multi_cursor_use_default_mapping=0
-let g:multi_cursor_next_key='<C-b>'
-let g:multi_cursor_prev_key='<C-p>'
-let g:multi_cursor_skip_key='<C-x>'
-let g:multi_cursor_quit_key='<Esc>'
-
-"argwrap
-let g:argwrap_padded_braces = '{'
-let g:argwrap_tail_comma_braces = '[{'
-
-"neoterm
-let g:neoterm_position = 'vertical'
-
-"neomake
-let g:neomake_ruby_enabled_makers = ["rubocop"]
-let g:neomake_json_enabled_makers = ["jsonlint"]
-let g:ruby_doc_command='open'
-autocmd! BufWritePost * Neomake
-
-" }}}
-
-" {{{ Sources
-"install vim-plug if not present
-if empty(glob('~/.vim/autoload/plug.vim'))
-  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall
-endif
-
-call plug#begin('~/.vim/plugged')
-
-"File management
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'tpope/vim-vinegar'
-Plug 'tpope/vim-eunuch'
-
-"tools
-Plug 'tpope/vim-repeat'                "Better repeat
-Plug 'tpope/vim-surround'              "surround verb
-Plug 'tpope/vim-commentary'            "Easy comment
-Plug 'sbdchd/vim-run'                  "Run scripts
-Plug 'junegunn/vim-easy-align'         "easy align
-Plug 'kana/vim-textobj-user'           "custom blocks
-Plug 'bronson/vim-trailing-whitespace' "remove whitespaces
-Plug 'FooSoft/vim-argwrap'             "Line splitting
-Plug 'tpope/vim-endwise'               "smart ends
-Plug 'tommcdo/vim-exchange'            "cx/X to exchange
-Plug 'adelarsq/vim-matchit'            "Better % match
-Plug 'tpope/vim-abolish'               "Smart replace with :S
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' } "Fuzzy completion
-Plug 'terryma/vim-multiple-cursors'
-Plug 'sheerun/vim-polyglot'
-Plug 'kshenoy/vim-signature'
-Plug 'kassio/neoterm'                  "Fast access to terminal
-Plug 'wellle/targets.vim'              "Improve text objects
-Plug 'AndrewRadev/splitjoin.vim'
-
-"snippets
-Plug 'Shougo/neosnippet'
-Plug 'jlebray/snippets'
-
-"errors
-Plug 'neomake/neomake'
-
-"Git
-Plug 'lambdalisue/gina.vim' "Git in vim
-Plug 'tpope/vim-fugitive'   "Keep for blame
-Plug 'mhinz/vim-signify'
-
-"HTML
-Plug 'othree/html5.vim'
-Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
-Plug 'cakebaker/scss-syntax.vim'
-Plug 'vim-scripts/liquid.vim'          "Liquid syntax
-
-"Ruby
-Plug 'vim-ruby/vim-ruby'
-Plug 'nelstrom/vim-textobj-rubyblock'
-Plug 'lucapette/vim-ruby-doc'
-Plug 'tpope/vim-rails'
-
-"Coffee
-Plug 'kchmck/vim-coffee-script'
-
-"Crystal
-Plug 'rhysd/vim-crystal'
-
-"Markdown
-Plug 'plasticboy/vim-markdown'
-
-"DB
-Plug 'jlebray/vim-simpledb'
-
-"Writing
-Plug 'junegunn/goyo.vim'
-Plug 'reedes/vim-pencil'
-Plug 'xolox/vim-misc'
-Plug 'xolox/vim-notes'
-
-"Themes
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'junegunn/seoul256.vim'
-Plug 'jlebray/spacemacs-theme.vim'
-Plug 'NLKNguyen/papercolor-theme'
-Plug 'pgdouyon/vim-yin-yang'
-Plug 'ewilazarus/preto'
-Plug 'crusoexia/vim-dream'
-
-call plug#end()
-" }}}
-" }}}
-" {{{ ===== THEME
-set background=dark
-" let g:seoul256_background = 233
-" colorscheme seoul256
-colorscheme spacemacs-theme
-" colorscheme PaperColor
-" colorscheme focused
-" colorscheme yin
-" colorscheme preto
-" colorscheme dream
-highlight ExtraWhitespace guibg=#990000 ctermbg=red
-highlight TermCursor ctermfg=red guifg=red
-
-" }}}
 " {{{ ===== MAPPINGS
 "Leader = Spacebar
 let mapleader = " "
+
+inoremap <D-V> <C-R>+
 
 "Move between visual lines BUT keep correct count
 nnoremap <expr> j v:count ? 'j' : 'gj'
@@ -257,7 +95,6 @@ nnoremap <silent> <leader>1 :only<cr>
 nnoremap <silent> <leader>2 :vsplit<cr>
 nnoremap <silent> <leader>3 :split<cr>
 nnoremap <silent> <leader>d :q<cr>
-nnoremap <silent> <leader>ws :call WindowSwap#EasyWindowSwap()<CR>
 
 "Tabs
 nnoremap <leader>tn :tabnew<cr>
@@ -322,6 +159,204 @@ nnoremap <Leader>w :FixWhitespace<CR>
 nnoremap <leader><leader> :T<space>
 
 " }}}
+" {{{ ===== PLUGINS
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall
+
+  colo desert
+else
+  " {{{ Options
+  let g:airline_powerline_fonts = 1    "powerline fonts
+  let g:airline_theme='distinguished'     "powerline fonts
+  if executable('ag')
+    let g:ackprg = 'ag --vimgrep'      "The silver searcher
+  endif
+  let g:netrw_localrmdir='rm -r'       "Delete non empty directories with netrw
+  let g:windowswap_map_keys = 0        "prevent default bindings
+
+  "Surround
+  let g:surround_no_insert_mappings = 1
+  let g:surround_35 = "<%# \r %>"
+  let g:surround_37 = "<% \r %>"
+  let g:surround_61 = "<%= \r %>"
+
+  "deoplete
+  let g:deoplete#enable_at_startup=1
+  let g:deoplete#auto_completion_start_length=2
+  let g:deoplete#ignore_sources = {}
+  let g:deoplete#ignore_sources._ = ["neosnippet"]
+  function! s:neosnippet_complete()
+    if neosnippet#expandable_or_jumpable()
+      return "\<Plug>(neosnippet_expand_or_jump)"
+    else
+      if pumvisible()
+        return "\<c-n>"
+      else
+        return "\<tab>"
+      endif
+    endif
+  endfunction
+
+  imap <expr><TAB> <SID>neosnippet_complete()
+
+  "multi cursors
+  let g:multi_cursor_use_default_mapping=0
+  let g:multi_cursor_next_key='<C-b>'
+  let g:multi_cursor_prev_key='<C-p>'
+  let g:multi_cursor_skip_key='<C-x>'
+  let g:multi_cursor_quit_key='<Esc>'
+
+  "argwrap
+  let g:argwrap_padded_braces = '{'
+  let g:argwrap_tail_comma_braces = '[{'
+
+  "neoterm
+  let g:neoterm_position = 'vertical'
+
+  "neomake
+  let g:neomake_ruby_enabled_makers = ["rubocop"]
+  let g:neomake_json_enabled_makers = ["jsonlint"]
+  let g:ruby_doc_command='open'
+  autocmd! BufRead,BufWritePost * Neomake
+
+  " }}}
+  " {{{ Sources
+  "install vim-plug if not present
+
+  call plug#begin('~/.vim/plugged')
+
+  "File management
+  Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+  Plug 'junegunn/fzf.vim'
+  Plug 'tpope/vim-vinegar'
+  Plug 'tpope/vim-eunuch'
+
+  "tools
+  Plug 'tpope/vim-repeat'                "Better repeat
+  Plug 'tpope/vim-surround'              "surround verb
+  Plug 'tpope/vim-commentary'            "Easy comment
+  Plug 'sbdchd/vim-run'                  "Run scripts
+  Plug 'junegunn/vim-easy-align'         "easy align
+  Plug 'kana/vim-textobj-user'           "custom blocks
+  Plug 'bronson/vim-trailing-whitespace' "remove whitespaces
+  Plug 'FooSoft/vim-argwrap'             "Line splitting
+  Plug 'tpope/vim-endwise'               "smart ends
+  Plug 'tommcdo/vim-exchange'            "cx/X to exchange
+  Plug 'adelarsq/vim-matchit'            "Better % match
+  Plug 'tpope/vim-abolish'               "Smart replace with :S
+  Plug 'terryma/vim-multiple-cursors'
+  Plug 'sheerun/vim-polyglot'
+  Plug 'kshenoy/vim-signature'
+  Plug 'wellle/targets.vim'              "Improve text objects
+  Plug 'AndrewRadev/splitjoin.vim'
+  Plug 'mhinz/vim-startify'
+  Plug 'brooth/far.vim'
+
+  "snippets
+  Plug 'Shougo/neosnippet'
+  Plug 'jlebray/snippets'
+
+  "errors
+  Plug 'neomake/neomake'
+
+  "Git
+  Plug 'lambdalisue/gina.vim' "Git in vim
+  Plug 'tpope/vim-fugitive'   "Keep for blame
+  Plug 'mhinz/vim-signify'
+  Plug 'jreybert/vimagit'
+
+  "HTML
+  Plug 'othree/html5.vim'
+  Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
+  Plug 'cakebaker/scss-syntax.vim'
+  Plug 'vim-scripts/liquid.vim'
+
+  "Ruby
+  Plug 'vim-ruby/vim-ruby'
+  Plug 'nelstrom/vim-textobj-rubyblock'
+  Plug 'lucapette/vim-ruby-doc'
+  Plug 'tpope/vim-rails'
+
+  "Coffee
+  Plug 'kchmck/vim-coffee-script'
+
+  "Crystal
+  Plug 'rhysd/vim-crystal'
+
+  "Markdown
+  Plug 'plasticboy/vim-markdown'
+
+  "DB
+  Plug 'jlebray/vim-simpledb'
+
+  "Writing
+  Plug 'junegunn/goyo.vim'
+  Plug 'reedes/vim-pencil'
+  Plug 'xolox/vim-misc'
+  Plug 'xolox/vim-notes'
+
+  "Themes
+  Plug 'vim-airline/vim-airline'
+  Plug 'vim-airline/vim-airline-themes'
+  Plug 'junegunn/seoul256.vim'
+  Plug 'dracula/vim'
+  Plug 'jlebray/spacemacs-theme.vim'
+
+  call plug#end()
+  " }}}
+  " {{{ Themes
+  set background=dark
+  let g:seoul256_background = 235
+  colorscheme seoul256
+  " colorscheme spacemacs-theme
+  " colorscheme dracula
+
+  highlight ExtraWhitespace guibg=#990000 ctermbg=red
+  highlight TermCursor ctermfg=red guifg=red
+
+  " }}}
+  " {{{ Custom Blocks
+  call textobj#user#plugin('erb', {
+  \   'code': {
+  \     'pattern': ['<%', '%>'],
+  \     'select-a': 'ay',
+  \     'select-i': 'iy',
+  \   },
+  \ })
+
+  call textobj#user#plugin('line', {
+  \   '-': {
+  \     'select-a-function': 'CurrentLineA',
+  \     'select-a': 'al',
+  \     'select-i-function': 'CurrentLineI',
+  \     'select-i': 'il',
+  \   },
+  \ })
+
+  function! CurrentLineA()
+    normal! 0
+    let head_pos = getpos('.')
+    normal! $
+    let tail_pos = getpos('.')
+    return ['v', head_pos, tail_pos]
+  endfunction
+
+  function! CurrentLineI()
+    normal! ^
+    let head_pos = getpos('.')
+    normal! g_
+    let tail_pos = getpos('.')
+    let non_blank_char_exists_p = getline('.')[head_pos[2] - 1] !~# '\s'
+    return
+    \ non_blank_char_exists_p
+    \ ? ['v', head_pos, tail_pos]
+    \ : 0
+  endfunction
+  " }}}
+endif
+" }}}
 " {{{ ===== MISC
 "Move between splits
 func! s:moveToSplit(direction)
@@ -330,9 +365,6 @@ func! s:moveToSplit(direction)
     execute "wincmd" a:direction
   endfunc
 
-  execute "tnoremap" "<silent>" "<C-" . a:direction . ">"
-        \ "<C-\\><C-n>"
-        \ ":call <SID>move(\"" . a:direction . "\")<CR>"
   execute "nnoremap" "<silent>" "<C-" . a:direction . ">"
         \ ":call <SID>move(\"" . a:direction . "\")<CR>"
 endfunc
@@ -347,42 +379,12 @@ function! FormatJSON()
 endfunction
 command! FormatJSON call FormatJSON()
 
-" }}}
-" {{{ ===== CUSTOM BLOCKS
-call textobj#user#plugin('erb', {
-\   'code': {
-\     'pattern': ['<%', '%>'],
-\     'select-a': 'ay',
-\     'select-i': 'iy',
-\   },
-\ })
-
-call textobj#user#plugin('line', {
-\   '-': {
-\     'select-a-function': 'CurrentLineA',
-\     'select-a': 'al',
-\     'select-i-function': 'CurrentLineI',
-\     'select-i': 'il',
-\   },
-\ })
-
-function! CurrentLineA()
-  normal! 0
-  let head_pos = getpos('.')
-  normal! $
-  let tail_pos = getpos('.')
-  return ['v', head_pos, tail_pos]
+"Center startify
+function! s:filter_header(lines) abort
+  let longest_line   = max(map(copy(a:lines), 'strwidth(v:val)'))
+  let centered_lines = map(copy(a:lines),
+        \ 'repeat(" ", (&columns / 2) - (longest_line / 2)) . v:val')
+  return centered_lines
 endfunction
-
-function! CurrentLineI()
-  normal! ^
-  let head_pos = getpos('.')
-  normal! g_
-  let tail_pos = getpos('.')
-  let non_blank_char_exists_p = getline('.')[head_pos[2] - 1] !~# '\s'
-  return
-  \ non_blank_char_exists_p
-  \ ? ['v', head_pos, tail_pos]
-  \ : 0
-endfunction
+let g:startify_custom_header = s:filter_header(startify#fortune#cowsay())
 " }}}
