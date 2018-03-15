@@ -9,7 +9,7 @@ set dictionary="/usr/dict/words"
 set expandtab
 set foldmethod=marker
 set hidden
-set history=100
+set history=10000
 set hlsearch
 set ignorecase
 set laststatus=2
@@ -33,6 +33,8 @@ set splitright
 set tabstop=2
 set timeoutlen=500 ttimeoutlen=0
 set title
+set undofile
+set undodir=~/.vim/undo
 set visualbell
 set wildignorecase
 set wildmode=list:full,full
@@ -48,11 +50,100 @@ autocmd BufRead,BufNewFile *.{ecr} set filetype=html
 autocmd BufRead,BufNewFile *.{tex} set spell breakindent linebreak
 autocmd BufRead,BufNewFile *.scss.css setfiletype scss
 autocmd BufRead,BufNewFile *.less setfiletype css
-autocmd FileType clojure inoremap ( ()<left>
 " }}}
 " {{{ ===== PLUGINS
+" {{{ Sources
+"install vim-plug if not present
+if empty(glob('~/.config/nvim/autoload/plug.vim'))
+  silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall
+endif
+
+call plug#begin('~/.config/nvim/plugged')
+
+"File management
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+Plug 'tpope/vim-vinegar'
+Plug 'tpope/vim-eunuch'
+
+"statusline
+Plug 'itchyny/lightline.vim'
+
+"text manipulation
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' } "Fuzzy completion
+Plug 'tpope/vim-repeat'                "Better repeat
+Plug 'tpope/vim-surround'              "surround verb
+Plug 'tpope/vim-commentary'            "Easy comment
+Plug 'junegunn/vim-easy-align'         "easy align
+Plug 'kana/vim-textobj-user'           "custom blocks
+Plug 'bronson/vim-trailing-whitespace' "remove whitespaces
+Plug 'FooSoft/vim-argwrap'             "Line splitting
+Plug 'tpope/vim-endwise'               "smart ends
+Plug 'tommcdo/vim-exchange'            "cx/X to exchange
+Plug 'adelarsq/vim-matchit'            "Better % match
+Plug 'tpope/vim-abolish'               "Smart replace with :S
+Plug 'terryma/vim-expand-region'
+Plug 'jlebray/splitjoin.vim'
+
+"tools
+Plug 'beloglazov/vim-online-thesaurus'
+Plug 'sbdchd/vim-run'                  "Run scripts
+Plug 'sheerun/vim-polyglot'
+Plug 'kshenoy/vim-signature'
+Plug 'kassio/neoterm'                  "Fast access to terminal
+Plug 'kepbod/quick-scope' "highlight fF
+Plug 'simnalamburt/vim-mundo'
+
+"snippets
+Plug 'Shougo/neosnippet'
+Plug 'jlebray/snippets'
+
+"errors
+Plug 'w0rp/ale'
+
+"Git
+Plug 'tpope/vim-fugitive'   "Keep for blame
+Plug 'tpope/vim-rhubarb'
+Plug 'mhinz/vim-signify'
+Plug 'junegunn/gv.vim'
+Plug 'jreybert/vimagit'
+
+"HTML
+Plug 'othree/html5.vim'
+Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
+Plug 'cakebaker/scss-syntax.vim'
+Plug 'vim-scripts/liquid.vim'          "Liquid syntax
+
+"Ruby
+Plug 'vim-ruby/vim-ruby'
+Plug 'nelstrom/vim-textobj-rubyblock'
+Plug 'tpope/vim-rails'
+Plug 'KurtPreston/vim-autoformat-rails'
+
+"Crystal
+Plug 'rhysd/vim-crystal'
+
+"Clojure
+Plug 'tpope/vim-fireplace'
+
+"Markdown
+Plug 'plasticboy/vim-markdown'
+
+"Writing
+Plug 'junegunn/goyo.vim'
+Plug 'reedes/vim-pencil'
+
+"Themes
+Plug 'junegunn/seoul256.vim'
+Plug 'jlebray/spacemacs-theme.vim'
+
+call plug#end()
+" }}}
 " {{{ Options
 if executable('ag')
+  set grepprg=ag\ --nogroup\ --nocolor
   let g:ackprg = 'ag --vimgrep'      "The silver searcher
 endif
 let g:netrw_localrmdir='rm -r'       "Delete non empty directories with netrw
@@ -110,20 +201,27 @@ let g:multi_cursor_quit_key='<Esc>'
 let g:argwrap_padded_braces = '{'
 let g:argwrap_tail_comma_braces = '[{'
 
+"Ruby
+let g:ruby_indent_block_style = 'do'
+let g:ruby_indent_assignment_style = 'variable'
+
 "neoterm
 let g:neoterm_position = 'vertical'
 
-"neomake
-let g:neomake_ruby_enabled_makers = ["rubocop", "reek"]
-let g:ruby_doc_command='open'
-let g:neomake_javascript_enabled_makers = ['jslint']
-let g:neomake_jsx_enabled_makers = ['jslint']
-autocmd! BufRead,BufWritePost * Neomake
+"ALE
+let g:ale_fixers = {
+\   'javascript': ['eslint'],
+\   'ruby': ['rubocop'],
+\}
+let g:ale_enabled = 1
+let g:ale_set_highlights = 0
+
+let test#ruby#rspec#options = "--require ~/Code/formatter/rspec.rb --format QuickfixFormatter"
 
 "highlight
 let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
-let g:qs_first_occurrence_highlight_color = '#afff5f' " gui vim
-let g:qs_second_occurrence_highlight_color = '#5fffff'  " gui vim
+let g:qs_first_occurrence_highlight_color = '#afff5f'
+let g:qs_second_occurrence_highlight_color = '#5fffff'
 
 "Magit
 let g:magit_default_sections = ['info', 'commit', 'staged', 'unstaged']
@@ -133,10 +231,9 @@ let g:lightline = {
       \ 'colorscheme': 'wombat',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
-      \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
+      \             [ 'readonly', 'filename', 'modified' ] ]
       \ },
       \ 'component_function': {
-      \   'gitbranch': 'fugitive#head',
       \   'fileformat': 'LightlineFileformat',
       \   'filetype': 'LightlineFiletype',
       \   'filename': 'LightlineFilename'
@@ -144,7 +241,7 @@ let g:lightline = {
       \ }
 
 function! LightlineFilename()
-  let filename = expand('%:t') !=# '' ? expand('%:t') : '[No Name]'
+  let filename = expand('%') !=# '' ? expand('%') : '[No Name]'
   return filename
 endfunction
 
@@ -156,96 +253,18 @@ function! LightlineFiletype()
   return winwidth(0) > 70 ? (&filetype !=# '' ? &filetype : 'no ft') : ''
 endfunction
 
-" }}}
-" {{{ Sources
-"install vim-plug if not present
-if empty(glob('~/.config/nvim/autoload/plug.vim'))
-  silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
-        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall
-endif
+"vim-expand-region
+call expand_region#custom_text_objects({
+      \ 'a]' :1,
+      \ 'ab' :1,
+      \ 'aB' :1,
+      \ })
 
-call plug#begin('~/.config/nvim/plugged')
+call expand_region#custom_text_objects('ruby', {
+      \ 'im' :0,
+      \ 'am' :0,
+      \ })
 
-"File management
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'tpope/vim-vinegar'
-Plug 'tpope/vim-eunuch'
-
-"statusline
-Plug 'itchyny/lightline.vim'
-
-"tools
-Plug 'tpope/vim-repeat'                "Better repeat
-Plug 'tpope/vim-surround'              "surround verb
-Plug 'tpope/vim-commentary'            "Easy comment
-Plug 'sbdchd/vim-run'                  "Run scripts
-Plug 'junegunn/vim-easy-align'         "easy align
-Plug 'kana/vim-textobj-user'           "custom blocks
-Plug 'bronson/vim-trailing-whitespace' "remove whitespaces
-Plug 'FooSoft/vim-argwrap'             "Line splitting
-Plug 'tpope/vim-endwise'               "smart ends
-Plug 'tommcdo/vim-exchange'            "cx/X to exchange
-Plug 'adelarsq/vim-matchit'            "Better % match
-Plug 'tpope/vim-abolish'               "Smart replace with :S
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' } "Fuzzy completion
-Plug 'terryma/vim-multiple-cursors'
-Plug 'sheerun/vim-polyglot'
-Plug 'kshenoy/vim-signature'
-Plug 'kassio/neoterm'                  "Fast access to terminal
-Plug 'jlebray/splitjoin.vim'
-Plug 'mhinz/vim-startify'     "Moo
-Plug 'unblevable/quick-scope' "highlight fF
-
-"snippets
-Plug 'Shougo/neosnippet'
-Plug 'jlebray/snippets'
-
-"errors
-Plug 'neomake/neomake'
-
-"Git
-Plug 'lambdalisue/gina.vim' "Git in vim
-Plug 'tpope/vim-fugitive'   "Keep for blame
-Plug 'tpope/vim-rhubarb'
-Plug 'mhinz/vim-signify'
-Plug 'jreybert/vimagit'
-
-"HTML
-Plug 'othree/html5.vim'
-Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
-Plug 'cakebaker/scss-syntax.vim'
-Plug 'vim-scripts/liquid.vim'          "Liquid syntax
-
-"Ruby
-Plug 'vim-ruby/vim-ruby'
-Plug 'nelstrom/vim-textobj-rubyblock'
-Plug 'lucapette/vim-ruby-doc'
-Plug 'tpope/vim-rails'
-Plug 'KurtPreston/vim-autoformat-rails'
-
-"Crystal
-Plug 'rhysd/vim-crystal'
-
-"Clojure
-Plug 'tpope/vim-fireplace'
-
-"Markdown
-Plug 'plasticboy/vim-markdown'
-
-"DB
-Plug 'jlebray/vim-simpledb'
-
-"Writing
-Plug 'junegunn/goyo.vim'
-Plug 'reedes/vim-pencil'
-
-"Themes
-Plug 'junegunn/seoul256.vim'
-Plug 'jlebray/spacemacs-theme.vim'
-
-call plug#end()
 " }}}
 " }}}
 " {{{ ===== THEME
@@ -271,6 +290,12 @@ vnoremap <expr> k v:count ? 'k' : 'gk'
 vnoremap < <gv
 vnoremap > >gv
 
+"Move between quickfix
+nnoremap <M-h> :cprev<cr>
+nnoremap <M-j> :lnext<cr>
+nnoremap <M-k> :lprev<cr>
+nnoremap <M-l> :cnext<cr>
+
 "J is used to switch tabs, so use C-n to join lines
 nnoremap <c-n> J
 
@@ -282,11 +307,13 @@ vnoremap <leader>y "+y
 nmap Y y$
 
 "files
-nnoremap <leader>s  :w<cr>
-nnoremap <leader>f  :Files<cr>
-nnoremap <leader>r  :Move <c-R>%
-nnoremap <leader>x  :Remove<cr>
-nnoremap <leader>n  :Ag<cr>
+nnoremap <leader>s :w<cr>
+nnoremap <leader>f :Files<cr>
+nnoremap <leader>r :Move <c-R>%
+nnoremap <leader>x :Unlink<cr>
+nnoremap <leader>n :Ag<cr>
+nnoremap <leader>u :MundoToggle<cr>
+vnoremap 1 "hy:Ag <C-R>h<cr>
 
 "Buffers
 nnoremap <leader>b :Buffers<cr>
@@ -309,10 +336,10 @@ xmap ga <Plug>(LiveEasyAlign)
 nmap ga <Plug>(LiveEasyAlign)
 
 "Git
-nnoremap <leader>gs  :Gina status<cr>
-nnoremap <leader>gc  :Gina commit<cr>
-nnoremap <leader>gp  :Gina push<cr>
-nnoremap <leader>gb  :Gblame<cr>
+nnoremap <leader>gs :Gstatus<cr>
+nnoremap <leader>gc :Gcommit<cr>
+nnoremap <leader>gp :!Git push<cr>
+nnoremap <leader>gb :Gblame<cr>
 
 "NeoVim
 nnoremap <leader>vr :source ~/.config/nvim/init.vim<cr>
@@ -349,11 +376,8 @@ nnoremap <F2> :tabnew<cr>
 nnoremap <F3> :Ttoggle<cr>
 nnoremap <F4> :Magit<cr>
 nnoremap <F5> :Tags<cr>
+nnoremap <F6> :set filetype=<cr>
 
-"jump between errors
-let g:syntastic_always_populate_loc_list = 1
-nnoremap [e :lprev<cr>
-nnoremap ]e :lnext<cr>
 
 "Fuzzy finder configuration
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
@@ -397,15 +421,6 @@ function! FormatJSON()
 endfunction
 command! FormatJSON call FormatJSON()
 
-"Center startify
-function! s:filter_header(lines) abort
-  let longest_line   = max(map(copy(a:lines), 'strwidth(v:val)'))
-  let centered_lines = map(copy(a:lines),
-        \ 'repeat(" ", (&columns / 2) - (longest_line / 2)) . v:val')
-  return centered_lines
-endfunction
-let g:startify_custom_header = s:filter_header(startify#fortune#cowsay())
-
 "line spec in terminal
 func! SpecLine()
   execute "T rspec %:" . line(".")
@@ -448,5 +463,40 @@ function! CurrentLineI()
   \ non_blank_char_exists_p
   \ ? ['v', head_pos, tail_pos]
   \ : 0
+endfunction
+
+call textobj#user#plugin('entire', {
+\      '-': {
+\        '*sfile*': expand('<sfile>:p'),
+\        'select-a': 'ae',  '*select-a-function*': 's:select_a',
+\        'select-i': 'ie',  '*select-i-function*': 's:select_i'
+\      }
+\    })
+
+function! s:select_a()
+  mark '
+
+  keepjumps normal! gg0
+  let start_pos = getpos('.')
+
+  keepjumps normal! G$
+  let end_pos = getpos('.')
+
+  return ['V', start_pos, end_pos]
+endfunction
+
+function! s:select_i()
+  mark '
+
+  keepjumps normal! gg0
+  call search('^.', 'cW')
+  let start_pos = getpos('.')
+
+  keepjumps normal! G$
+  call search('^.', 'bcW')
+  normal! $
+  let end_pos = getpos('.')
+
+  return ['V', start_pos, end_pos]
 endfunction
 " }}}
