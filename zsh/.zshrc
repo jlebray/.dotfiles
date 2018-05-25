@@ -1,12 +1,20 @@
 # Path to your oh-my-zsh installation.
 export ZSH=/Users/johan/.oh-my-zsh
 export EDITOR=`which nvim`
+export PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig
+
+TIMEFMT='%J   %U  user %S system %P cpu %*E total'$'\n'\
+'avg shared (code):         %X KB'$'\n'\
+'avg unshared (data/stack): %D KB'$'\n'\
+'total (sum):               %K KB'$'\n'\
+'max memory:                %M MB'$'\n'\
+'page faults from disk:     %F'$'\n'\
+'other page faults:         %R'
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
-ZSH_THEME="agnoster"
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -75,7 +83,6 @@ function work_in_progress_prompt() {
 }
 
 PROMPT='%{$fg_bold[green]%}$(git_prompt_info)${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} %{$reset_color%}'
-RPROMPT='%{$fg_bold[blue]%}ruby-$(rbenv_prompt_info) % %{$reset_color%}'
 
 eval "$(rbenv init -)"
 
@@ -92,11 +99,10 @@ alias gco='git co'
 alias dbm='rake db:migrate'
 alias dbs='rake db:migrate:status'
 alias dbr='rake db:rollback'
-alias dbd='rake db:migrate:down'
 
 alias fzf='fzf --height 80%'
 
-alias rs='rails server -b 0.0.0.0 -p 3000'
+alias rs='rails server -b 0.0.0.0 -p 3000 -e development'
 
 function clean_old_branches() {
   git branch --no-color -vv | awk '/: gone]/{print $1}' | xargs git branch -D
@@ -107,7 +113,7 @@ function hstaging() {
 }
 
 function htest() {
-  heroku run "$@" -a shopmium-test
+  heroku run "$@" -a shopmium-sandbox
 }
 
 function hprod() {
@@ -119,7 +125,7 @@ function hdstaging() {
 }
 
 function hdtest() {
-  heroku run:detached "$@" -a shopmium-test
+  heroku run:detached "$@" -a shopmium-sandbox
 }
 
 function hdprod() {
@@ -131,25 +137,28 @@ function rcstaging() {
 }
 
 function rctest() {
-  heroku run rails console -a shopmium-test
+  heroku run rails console -a shopmium-sandbox
 }
 
 function rcprod() {
   heroku run rails console -a shopmium
 }
 
+function gar() {
+  ag -l -G "$1" | xargs git add
+}
+
 function refresh() {
   local CURRENT=$(git_current_branch)
-  if [ "$CURRENT" = 'develop' -o "$CURRENT" = 'master' ]; then
-    echo "You are on $fg_bold[green]$CURRENT$reset_color, nothing done"
+  if [ "$CURRENT" = 'develop' ]; then
+    git pull && git checkout master && git pull && git checkout develop
+  elif [ "$CURRENT" = 'master' ]; then
+    git pull && git checkout develop && git pull && git checkout master
   else
     gwip
-    git checkout develop
-    git pull
-    git checkout master
-    git pull
-    git checkout $CURRENT
-    gunwip
+    git checkout develop && git pull &&
+      git checkout master && git pull &&
+      git checkout $CURRENT && gunwip
   fi
 }
 
@@ -234,31 +243,67 @@ function prespec() {
   rake parallel:spec
 }
 
-function replace_all() {
-  ag -l "$1" | xargs perl -pi -E "s/$1/$2/g"
+function start_release() {
+  local number current res
+
+  if [ -z "$1" ]
+  then
+    number="$(date +'%Y.%m.%d')"
+    i=2
+  else
+    current=$1
+    number="$(date +'%Y.%m.%d-')$current"
+    i=$((current+1))
+  fi
+
+  git flow release start $number
+  res=$?
+
+  if [ $res -eq 1 ]; then
+    start_release $i
+  fi
 }
 
-function waiton() {
-  pid=$1
-  me="$(basename $0)($$):"
-  if [ -z "$pid" ]
-  then
-    echo "$me a PID is required as an argument" >&2
-    exit 2
-  fi
+function finish_release() {
+  local branch=$(git branch | grep "release" | sed "s:.*/::")
 
-  name=$(ps -p $pid -o comm=)
-  if [ $? -eq 0 ]
-  then
-    echo "$me waiting for PID $pid to finish ($name)"
-    while ps -p $pid > /dev/null; do sleep 1; done;
+  refresh
+  git flow release finish $branch
+}
+
+function push_prod () {
+  local CURRENT=$(git_current_branch)
+
+  if [ "$CURRENT" = 'master' ]; then
+    gps && gps --tags && git push production master:master
   else
-    echo "$me failed to find process with PID $pid" >&2
-    exit 1
+    echo "You are not on master"
   fi
+}
+
+function dbd() {
+  rake db:migrate:down VERSION=$1
+}
+
+# WIP
+function revert_migrations() {
+  local CURRENT=$(git_current_branch)
+
+  echo "Calculating current structure" &&
+  dbs > ./private/temp_structure &&
+  git checkout develop &&
+  echo "Calculating develop structure" &&
+  local changes=$(dbs | comm -23 ./private/temp_structure -)
+
+  git checkout $CURRENT
+
+  echo "Reverting migrations" &&
+  $changes | awk '{print $2}' | xargs dbd
 }
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 #iterm2 shell
 #source ~/.iterm2_shell_integration.`basename $SHELL`
+
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"

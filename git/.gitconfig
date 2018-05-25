@@ -45,3 +45,5 @@
 	path = nvim
 [mergetool "vimdiff"]
 	path = nvim
+[diff]
+	algorithm = patience

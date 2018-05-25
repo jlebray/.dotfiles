@@ -47,6 +47,10 @@ endif
 
 autocmd BufRead,BufNewFile *.{arb} set filetype=ruby
 autocmd BufRead,BufNewFile *.{ecr} set filetype=html
+autocmd FileType ruby set omnifunc=rubycomplete#Complete
+autocmd FileType ruby let g:rubycomplete_buffer_loading=1
+autocmd FileType ruby let g:rubycomplete_classes_in_global=1
+autocmd FileType ruby set iskeyword+=!,?
 autocmd BufRead,BufNewFile *.{tex} set spell breakindent linebreak
 autocmd BufRead,BufNewFile *.scss.css setfiletype scss
 autocmd BufRead,BufNewFile *.less setfiletype css
@@ -62,7 +66,7 @@ endif
 
 call plug#begin('~/.config/nvim/plugged')
 
-"File management
+"❤️
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'tpope/vim-vinegar'
@@ -120,7 +124,6 @@ Plug 'vim-scripts/liquid.vim'          "Liquid syntax
 Plug 'vim-ruby/vim-ruby'
 Plug 'nelstrom/vim-textobj-rubyblock'
 Plug 'tpope/vim-rails'
-Plug 'KurtPreston/vim-autoformat-rails'
 
 "Crystal
 Plug 'rhysd/vim-crystal'
@@ -136,7 +139,6 @@ Plug 'junegunn/goyo.vim'
 Plug 'reedes/vim-pencil'
 
 "Themes
-Plug 'junegunn/seoul256.vim'
 Plug 'jlebray/spacemacs-theme.vim'
 
 call plug#end()
@@ -156,9 +158,14 @@ let g:surround_61 = "<%= \r %>"
 
 "deoplete
 let g:deoplete#enable_at_startup=1
-let g:deoplete#auto_completion_start_length=2
-let g:deoplete#ignore_sources = {}
-let g:deoplete#ignore_sources._ = ["neosnippet"]
+let g:deoplete#enable_refresh_always=0
+let g:deoplete#enable_smart_case=1
+let g:deoplete#file#enable_buffer_path=1
+let g:deoplete#buffer#require_same_filetype=0
+
+call deoplete#custom#source('neosnippet', 'rank', 9999)
+
+"neosnippets
 let g:neosnippet#snippets_directory = "/Users/johan/.config/nvim/plugged/snippets/neosnippets/"
 function! s:neosnippet_complete()
   if neosnippet#expandable()
@@ -190,13 +197,6 @@ imap <expr><TAB> <SID>neosnippet_complete()
 imap <expr><C-j> <SID>neosnippet_jump()
 imap <expr><CR> <SID>autocomplete_end()
 
-"multi cursors
-let g:multi_cursor_use_default_mapping=0
-let g:multi_cursor_next_key='<C-b>'
-let g:multi_cursor_prev_key='<C-p>'
-let g:multi_cursor_skip_key='<C-x>'
-let g:multi_cursor_quit_key='<Esc>'
-
 "argwrap
 let g:argwrap_padded_braces = '{'
 let g:argwrap_tail_comma_braces = '[{'
@@ -206,7 +206,7 @@ let g:ruby_indent_block_style = 'do'
 let g:ruby_indent_assignment_style = 'variable'
 
 "neoterm
-let g:neoterm_position = 'vertical'
+let g:neoterm_default_mod = 'aboveleft'
 
 "ALE
 let g:ale_fixers = {
@@ -269,8 +269,6 @@ call expand_region#custom_text_objects('ruby', {
 " }}}
 " {{{ ===== THEME
 set background=dark
-" let g:seoul256_background = 235
-" colorscheme seoul256
 colorscheme spacemacs-theme
 highlight ExtraWhitespace guibg=#990000 ctermbg=red
 highlight TermCursor ctermfg=red guifg=red
@@ -318,6 +316,7 @@ vnoremap 1 "hy:Ag <C-R>h<cr>
 "Buffers
 nnoremap <leader>b :Buffers<cr>
 nnoremap <tab> <C-^>
+nnoremap <C-p> <tab>
 nnoremap <leader>/ :BLines<cr>
 
 "Window
@@ -327,7 +326,6 @@ nnoremap <silent> <leader>3 :split<cr>
 nnoremap <silent> <leader>d :q<cr>
 
 "Files
-nnoremap <leader>f :Files<cr>
 nnoremap K :tabnext<cr>
 nnoremap J :tabprev<cr>
 
@@ -362,16 +360,7 @@ vnoremap <leader>n  :NoteFromSelectedText<cr>
 nnoremap <silent> <leader>h :nohlsearch<cr><c-l>
 nnoremap <silent> <leader>l :ArgWrap<CR>
 
-"Dash
-fun! s:get_visual_selection()
-  let l=getline("'<")
-  let [line1,col1] = getpos("'<")[1:2]
-  let [line2,col2] = getpos("'>")[1:2]
-  return l[col1 - 1: col2 - 1]
-endfun
-
 "Function keys
-nnoremap <F1> :Dash<cr>
 nnoremap <F2> :tabnew<cr>
 nnoremap <F3> :Ttoggle<cr>
 nnoremap <F4> :Magit<cr>
@@ -383,6 +372,22 @@ nnoremap <F6> :set filetype=<cr>
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
 let g:fzf_files_options =
   \ '--preview "(coderay {} || cat {}) 2> /dev/null | head -'.&lines.'"'
+
+" CTRL-A CTRL-Q to select all and build quickfix list
+
+function! s:build_quickfix_list(lines)
+  call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
+  copen
+  cc
+endfunction
+
+let g:fzf_action = {
+  \ 'ctrl-q': function('s:build_quickfix_list'),
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit' }
+
+let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 
 "Remove search highlighting
 nnoremap * *<c-o>
@@ -426,6 +431,15 @@ func! SpecLine()
   execute "T rspec %:" . line(".")
 endfunc
 command! SpecLine call SpecLine()
+
+"Fix db/structure.sql conflict
+function! FixStruct()
+  normal /<<<\<cr>kmajdd/===\<cr>dd/>>>\<cr>dd'akvG
+  execute "sort u"
+  normal ddvG
+  execute "s/$/\r"
+endfunction
+command! FixStruct call FixStruct()
 " }}}
 " {{{ ===== CUSTOM BLOCKS
 call textobj#user#plugin('erb', {
