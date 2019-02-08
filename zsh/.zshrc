@@ -2,6 +2,10 @@
 export ZSH=/Users/johan/.oh-my-zsh
 export EDITOR=`which nvim`
 export PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig
+export PATH="/Users/johan/.cargo/bin:$PATH"
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+# export PATH="/Users/johan/.rbenv/versions/2.4.3/bin:$PATH"
+export LANG="fr_FR"
 
 TIMEFMT='%J   %U  user %S system %P cpu %*E total'$'\n'\
 'avg shared (code):         %X KB'$'\n'\
@@ -43,7 +47,7 @@ PROJECT_PATHS=(~/Code)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(brew bundler gem git gitfast git-flow pj rails rake-fast rbenv sublime zsh-syntax-highlighting colorize osx)
+plugins=(bundler git gitfast git-flow pj rails colorize osx)
 
 # User configuration
 
@@ -166,15 +170,6 @@ function fgps {
   git push --set-upstream origin $(git_current_branch)
 }
 
-# fbr - checkout git branch
-fbr() {
-  local branches branch
-  branches=$(git branch --all | grep -v HEAD) &&
-  branch=$(echo "$branches" |
-           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
-  git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
-}
-
 # fco - checkout git branch/tag
 fco() {
   local tags branches target
@@ -188,6 +183,11 @@ fco() {
     (echo "$tags"; echo "$branches") |
     fzf-tmux -l30 -- --no-hscroll --ansi +m -d "\t" -n 2) || return
   git checkout $(echo "$target" | awk '{print $2}')
+}
+
+# fgm - git merge
+fgm() {
+  git branch | cut -c3- | fzf | xargs git merge
 }
 
 # fshow - git commit browser (enter for show, ctrl-d for diff, ctrl-r for reset, ` toggles sort)
@@ -225,9 +225,7 @@ ftags() {
                                       -c "silent tag $(cut -f2 <<< "$line")"
 }
 
-# fe [FUZZY PATTERN] - Open the selected file with the default editor
-#   - Bypass fuzzy finder if there's only one match (--select-1)
-#   - Exit if there's no match (--exit-0)
+# fe - fuzzy file edit
 fe() {
   local file
   file=$(fzf-tmux --query="$1" --select-1 --exit-0)
@@ -265,7 +263,7 @@ function start_release() {
 }
 
 function finish_release() {
-  local branch=$(git branch | grep "release" | sed "s:.*/::")
+  local branch=$(git branch | grep "release/" | sed "s:.*/::")
 
   refresh
   git flow release finish $branch
@@ -285,25 +283,44 @@ function dbd() {
   rake db:migrate:down VERSION=$1
 }
 
-# WIP
 function revert_migrations() {
   local CURRENT=$(git_current_branch)
 
-  echo "Calculating current structure" &&
-  dbs > ./private/temp_structure &&
-  git checkout develop &&
-  echo "Calculating develop structure" &&
-  local changes=$(dbs | comm -23 ./private/temp_structure -)
+  echo "Calculating current structure"
+  local new=($(dbs | grep -E "\d{14}" | sed -E "s/[^0-9]*([0-9]+).*/\1/"))
 
-  git checkout $CURRENT
+  echo "Calculating develop structure"
+  local old=($(git show develop:db/structure.sql | grep -E "INTO schema" | sed -E "s/[^0-9]*([0-9]+).*/\1/"))
 
-  echo "Reverting migrations" &&
-  $changes | awk '{print $2}' | xargs dbd
+  local changes=($(echo ${new[@]} ${old[@]} | tr ' ' '\n' | sort | uniq -u))
+  local changes=($(echo ${(Oa)changes}))
+
+  for version in $changes; do
+    echo "===== Reverting $version ====="
+    env VERSION="$version" rake db:migrate:down
+  done
 }
 
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+function fix_spring() {
+  spring stop
+  rake db:test:prepare
+  spring stop
+}
+
+function replace_all() {
+  local from=$1
+  local to=$2
+
+  ag -0 -l "$from" | xargs -0 perl -pi -e "s/$from/$to/g"
+}
+
 
 #iterm2 shell
+# test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 #source ~/.iterm2_shell_integration.`basename $SHELL`
 
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+# # The next line updates PATH for the Google Cloud SDK.
+# if [ -f '/Users/johan/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/johan/Downloads/google-cloud-sdk/path.zsh.inc'; fi
+
+# # The next line enables shell command completion for gcloud.
+# if [ -f '/Users/johan/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/johan/Downloads/google-cloud-sdk/completion.zsh.inc'; fi

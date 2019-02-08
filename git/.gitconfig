@@ -1,6 +1,7 @@
 [user]
 	name = Johan Le Bray
 	email = johan.lebray@shopmium.com
+	signingkey = 7355373386496ADA
 [alias]
   co = checkout
   br = branch
@@ -47,3 +48,7 @@
 	path = nvim
 [diff]
 	algorithm = patience
+[commit]
+	gpgsign = false
+[gpg]
+	program = /usr/local/bin/gpg

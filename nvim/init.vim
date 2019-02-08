@@ -71,6 +71,12 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-eunuch'
+Plug 'tpope/vim-speeddating'
+Plug 'tpope/vim-dadbod'
+Plug 'tpope/vim-dispatch'
+
+"Navigation
+Plug 'arkwright/vim-whiplash'
 
 "statusline
 Plug 'itchyny/lightline.vim'
@@ -89,14 +95,15 @@ Plug 'tommcdo/vim-exchange'            "cx/X to exchange
 Plug 'adelarsq/vim-matchit'            "Better % match
 Plug 'tpope/vim-abolish'               "Smart replace with :S
 Plug 'terryma/vim-expand-region'
-Plug 'jlebray/splitjoin.vim'
+Plug 'AndrewRadev/splitjoin.vim'
+Plug 'junegunn/vim-after-object'       "Ex: va=, ya=, ca=, da=
 
 "tools
 Plug 'beloglazov/vim-online-thesaurus'
 Plug 'sbdchd/vim-run'                  "Run scripts
 Plug 'sheerun/vim-polyglot'
 Plug 'kshenoy/vim-signature'
-Plug 'kassio/neoterm'                  "Fast access to terminal
+Plug 'jlebray/neoterm'                 "Fast access to terminal
 Plug 'kepbod/quick-scope' "highlight fF
 Plug 'simnalamburt/vim-mundo'
 
@@ -113,12 +120,14 @@ Plug 'tpope/vim-rhubarb'
 Plug 'mhinz/vim-signify'
 Plug 'junegunn/gv.vim'
 Plug 'jreybert/vimagit'
+Plug 'tiev/githubreview.vim'
 
 "HTML
 Plug 'othree/html5.vim'
 Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'vim-scripts/liquid.vim'          "Liquid syntax
+Plug 'ap/vim-css-color'
 
 "Ruby
 Plug 'vim-ruby/vim-ruby'
@@ -131,6 +140,9 @@ Plug 'rhysd/vim-crystal'
 "Clojure
 Plug 'tpope/vim-fireplace'
 
+"Rust
+Plug 'rust-lang/rust.vim'
+
 "Markdown
 Plug 'plasticboy/vim-markdown'
 
@@ -140,6 +152,11 @@ Plug 'reedes/vim-pencil'
 
 "Themes
 Plug 'jlebray/spacemacs-theme.vim'
+Plug 'joshdick/onedark.vim'
+Plug 'pgdouyon/vim-yin-yang'
+
+"Prez
+Plug 'tybenz/vimdeck'
 
 call plug#end()
 " }}}
@@ -206,15 +223,20 @@ let g:ruby_indent_block_style = 'do'
 let g:ruby_indent_assignment_style = 'variable'
 
 "neoterm
-let g:neoterm_default_mod = 'aboveleft'
+let g:neoterm_default_mod = 'vertical'
 
 "ALE
 let g:ale_fixers = {
 \   'javascript': ['eslint'],
+\   'javascript.jsx': ['eslint'],
+\   'jsx': ['eslint'],
+\   'json': ['fixjson'],
 \   'ruby': ['rubocop'],
+\   'rust': ['rustfmt'],
 \}
 let g:ale_enabled = 1
 let g:ale_set_highlights = 0
+let g:ale_fix_on_save = 0
 
 let test#ruby#rspec#options = "--require ~/Code/formatter/rspec.rb --format QuickfixFormatter"
 
@@ -265,11 +287,18 @@ call expand_region#custom_text_objects('ruby', {
       \ 'am' :0,
       \ })
 
+"vim-whiplash
+let g:WhiplashProjectsDir = "~/Code/"
+
+"vim-after-object
+autocmd VimEnter * call after_object#enable('=', ':', '-', '#', ' ', '"', '''', '[', ']', '{', '}', '(', '}')
+
 " }}}
 " }}}
 " {{{ ===== THEME
 set background=dark
-colorscheme spacemacs-theme
+" colorscheme spacemacs-theme
+colorscheme onedark
 highlight ExtraWhitespace guibg=#990000 ctermbg=red
 highlight TermCursor ctermfg=red guifg=red
 
@@ -277,6 +306,7 @@ highlight TermCursor ctermfg=red guifg=red
 " {{{ ===== MAPPINGS
 "Leader = Spacebar
 let mapleader = " "
+let maplocalleader = ","
 
 "Move between visual lines BUT keep correct count
 nnoremap <expr> j v:count ? 'j' : 'gj'
@@ -288,11 +318,20 @@ vnoremap <expr> k v:count ? 'k' : 'gk'
 vnoremap < <gv
 vnoremap > >gv
 
+"Highlight selection
+vnoremap * y:let @/ = @"<CR>
+
 "Move between quickfix
 nnoremap <M-h> :cprev<cr>
 nnoremap <M-j> :lnext<cr>
 nnoremap <M-k> :lprev<cr>
 nnoremap <M-l> :cnext<cr>
+
+"Move windows
+nnoremap <M-LEFT> <C-W>h
+nnoremap <M-DOWN> <C-W>j
+nnoremap <M-UP> <C-W>k
+nnoremap <M-RIGHT> <C-W>l
 
 "J is used to switch tabs, so use C-n to join lines
 nnoremap <c-n> J
@@ -312,6 +351,7 @@ nnoremap <leader>x :Unlink<cr>
 nnoremap <leader>n :Ag<cr>
 nnoremap <leader>u :MundoToggle<cr>
 vnoremap 1 "hy:Ag <C-R>h<cr>
+vnoremap / "hy/<C-R>h
 
 "Buffers
 nnoremap <leader>b :Buffers<cr>
@@ -339,16 +379,19 @@ nnoremap <leader>gc :Gcommit<cr>
 nnoremap <leader>gp :!Git push<cr>
 nnoremap <leader>gb :Gblame<cr>
 
+"DB
+nnoremap <leader>q :DB postgres://postgres:4242424242@localhost:5432/pg_development<space>
+
 "NeoVim
 nnoremap <leader>vr :source ~/.config/nvim/init.vim<cr>
 nnoremap <leader>ve :tabedit ~/.config/nvim/init.vim<cr>
 nnoremap <leader>vq :qa!<cr>
 
 "Plug
-nnoremap <leader>pi  :PlugInstall<cr>
-nnoremap <leader>pug :PlugUpgrade<cr>
-nnoremap <leader>pud :PlugUpdate<cr>
-nnoremap <leader>pc  :PlugClean<cr>
+nnoremap <leader>oi  :PlugInstall<cr>
+nnoremap <leader>oug :PlugUpgrade<cr>
+nnoremap <leader>oud :PlugUpdate<cr>
+nnoremap <leader>oc  :PlugClean<cr>
 
 "Notes
 nnoremap <leader>n  :Note<space>
@@ -365,8 +408,11 @@ nnoremap <F2> :tabnew<cr>
 nnoremap <F3> :Ttoggle<cr>
 nnoremap <F4> :Magit<cr>
 nnoremap <F5> :Tags<cr>
-nnoremap <F6> :set filetype=<cr>
+nnoremap <F7> :set filetype=<cr>
+nnoremap <F9> :ALEFix<cr>
 
+"project
+nnoremap <leader>p :SwitchProject<cr>
 
 "Fuzzy finder configuration
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
@@ -400,6 +446,28 @@ nnoremap <leader><leader> :T<space>
 nnoremap <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
 \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
 \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+
+"Switch project
+function! s:open_file_in_project(project)
+  exe "cd ~/Code/" . a:project
+  call fzf#vim#files(".")
+  call feedkeys('i')
+endfunction
+
+function! s:switch_project()
+  try
+    call fzf#run({
+    \ 'source':  'ls ~/Code/',
+    \ 'sink':    function('s:open_file_in_project')})
+  catch
+    echohl WarningMsg
+    echom v:exception
+    echohl None
+  endtry
+endfunction
+
+command! SwitchProject call s:switch_project()
+
 " }}}
 " {{{ ===== MISC
 "Move between splits
