@@ -19,7 +19,6 @@ set nobackup
 set noswapfile
 set number
 set relativenumber
-set rtp+=/usr/local/opt/fzf
 set ruler
 set scrolloff=10
 set shiftround
@@ -69,14 +68,12 @@ call plug#begin('~/.config/nvim/plugged')
 "❤️
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+Plug '/usr/local/opt/fzf'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-dadbod'
 Plug 'tpope/vim-dispatch'
-
-"Navigation
-Plug 'arkwright/vim-whiplash'
 
 "statusline
 Plug 'itchyny/lightline.vim'
@@ -88,7 +85,7 @@ Plug 'tpope/vim-surround'              "surround verb
 Plug 'tpope/vim-commentary'            "Easy comment
 Plug 'junegunn/vim-easy-align'         "easy align
 Plug 'kana/vim-textobj-user'           "custom blocks
-Plug 'bronson/vim-trailing-whitespace' "remove whitespaces
+Plug 'bronson/vim-trailing-whitespace' "remove whitespace
 Plug 'FooSoft/vim-argwrap'             "Line splitting
 Plug 'tpope/vim-endwise'               "smart ends
 Plug 'tommcdo/vim-exchange'            "cx/X to exchange
@@ -96,15 +93,15 @@ Plug 'adelarsq/vim-matchit'            "Better % match
 Plug 'tpope/vim-abolish'               "Smart replace with :S
 Plug 'terryma/vim-expand-region'
 Plug 'AndrewRadev/splitjoin.vim'
-Plug 'junegunn/vim-after-object'       "Ex: va=, ya=, ca=, da=
 
 "tools
 Plug 'beloglazov/vim-online-thesaurus'
 Plug 'sbdchd/vim-run'                  "Run scripts
+Plug 'janko/vim-test'
 Plug 'sheerun/vim-polyglot'
 Plug 'kshenoy/vim-signature'
 Plug 'jlebray/neoterm'                 "Fast access to terminal
-Plug 'kepbod/quick-scope' "highlight fF
+Plug 'kepbod/quick-scope'              "highlight fF
 Plug 'simnalamburt/vim-mundo'
 
 "snippets
@@ -115,36 +112,24 @@ Plug 'jlebray/snippets'
 Plug 'w0rp/ale'
 
 "Git
-Plug 'tpope/vim-fugitive'   "Keep for blame
+Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-rhubarb'
 Plug 'mhinz/vim-signify'
 Plug 'junegunn/gv.vim'
 Plug 'jreybert/vimagit'
-Plug 'tiev/githubreview.vim'
 
 "HTML
-Plug 'othree/html5.vim'
 Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'vim-scripts/liquid.vim'          "Liquid syntax
 Plug 'ap/vim-css-color'
 
 "Ruby
-Plug 'vim-ruby/vim-ruby'
 Plug 'nelstrom/vim-textobj-rubyblock'
 Plug 'tpope/vim-rails'
 
-"Crystal
-Plug 'rhysd/vim-crystal'
-
 "Clojure
 Plug 'tpope/vim-fireplace'
-
-"Rust
-Plug 'rust-lang/rust.vim'
-
-"Markdown
-Plug 'plasticboy/vim-markdown'
 
 "Writing
 Plug 'junegunn/goyo.vim'
@@ -156,7 +141,10 @@ Plug 'joshdick/onedark.vim'
 Plug 'pgdouyon/vim-yin-yang'
 
 "Prez
-Plug 'tybenz/vimdeck'
+Plug 'vim-scripts/SyntaxRange'
+
+"Deoplete plugins
+Plug 'deoplete-plugins/deoplete-tag'
 
 call plug#end()
 " }}}
@@ -179,8 +167,15 @@ let g:deoplete#enable_refresh_always=0
 let g:deoplete#enable_smart_case=1
 let g:deoplete#file#enable_buffer_path=1
 let g:deoplete#buffer#require_same_filetype=0
+let g:deoplete#tag#cache_limit_size = 5000000
 
+call deoplete#custom#option('max_list', 30)
+
+call deoplete#custom#source('tag', 'rank', 10)
+call deoplete#custom#source('buffer', 'rank', 100)
 call deoplete#custom#source('neosnippet', 'rank', 9999)
+
+call deoplete#custom#var('buffer', { 'require_same_filetype': v:false })
 
 "neosnippets
 let g:neosnippet#snippets_directory = "/Users/johan/.config/nvim/plugged/snippets/neosnippets/"
@@ -212,6 +207,7 @@ endfunction
 
 imap <expr><TAB> <SID>neosnippet_complete()
 imap <expr><C-j> <SID>neosnippet_jump()
+smap <expr><C-j> <SID>neosnippet_jump()
 imap <expr><CR> <SID>autocomplete_end()
 
 "argwrap
@@ -237,8 +233,7 @@ let g:ale_fixers = {
 let g:ale_enabled = 1
 let g:ale_set_highlights = 0
 let g:ale_fix_on_save = 0
-
-let test#ruby#rspec#options = "--require ~/Code/formatter/rspec.rb --format QuickfixFormatter"
+let g:ale_ruby_rubocop_executable = 'bundle'
 
 "highlight
 let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
@@ -290,8 +285,9 @@ call expand_region#custom_text_objects('ruby', {
 "vim-whiplash
 let g:WhiplashProjectsDir = "~/Code/"
 
-"vim-after-object
-autocmd VimEnter * call after_object#enable('=', ':', '-', '#', ' ', '"', '''', '[', ']', '{', '}', '(', '}')
+"vim-test
+let test#strategy = "dispatch"
+" let test#ruby#rspec#options = "--format progress --require ~/code/rspec_support/quickfix_formatter.rb --format QuickfixFormatter --out ~/code/rspec_support/quickfix.out"
 
 " }}}
 " }}}
@@ -323,15 +319,27 @@ vnoremap * y:let @/ = @"<CR>
 
 "Move between quickfix
 nnoremap <M-h> :cprev<cr>
+nnoremap ˙ :cprev<cr>
 nnoremap <M-j> :lnext<cr>
+nnoremap ∆ :lnext<cr>
 nnoremap <M-k> :lprev<cr>
+nnoremap ˚ :lprev<cr>
 nnoremap <M-l> :cnext<cr>
+nnoremap ¬ :cnext<cr>
 
-"Move windows
-nnoremap <M-LEFT> <C-W>h
-nnoremap <M-DOWN> <C-W>j
-nnoremap <M-UP> <C-W>k
-nnoremap <M-RIGHT> <C-W>l
+"Emacs movement in insertion
+inoremap <M-b> <C-o>b
+inoremap ∫ <C-o>b
+inoremap <M-f> <C-o>f
+inoremap ƒ <C-o>b
+inoremap <M-a> <C-o>(
+inoremap å <C-o>(
+inoremap <M-e> <C-o>)
+inoremap ´ <C-o>)
+inoremap <M-{> <C-o>{
+inoremap “ <C-o>{
+inoremap <M-}> <C-o>}
+inoremap ‘ <C-o>}
 
 "J is used to switch tabs, so use C-n to join lines
 nnoremap <c-n> J
@@ -341,16 +349,17 @@ vnoremap <leader>e :TREPLSendSelection<cr>
 nnoremap <leader>e :TREPLSendFile<cr>
 
 vnoremap <leader>y "+y
-nmap Y y$
+nnoremap Y y$
 
 "files
 nnoremap <leader>s :w<cr>
 nnoremap <leader>f :Files<cr>
 nnoremap <leader>r :Move <c-R>%
 nnoremap <leader>x :Unlink<cr>
-nnoremap <leader>n :Ag<cr>
+nnoremap <leader>n :Rg<cr>
 nnoremap <leader>u :MundoToggle<cr>
-vnoremap 1 "hy:Ag <C-R>h<cr>
+vnoremap 1 "hy:Rg <C-R>h<cr>
+vnoremap <F5> "hy:Tags <C-R>h<cr>
 vnoremap / "hy/<C-R>h
 
 "Buffers
@@ -376,7 +385,7 @@ nmap ga <Plug>(LiveEasyAlign)
 "Git
 nnoremap <leader>gs :Gstatus<cr>
 nnoremap <leader>gc :Gcommit<cr>
-nnoremap <leader>gp :!Git push<cr>
+nnoremap <leader>gp :Gpush<cr>
 nnoremap <leader>gb :Gblame<cr>
 
 "DB
@@ -393,12 +402,6 @@ nnoremap <leader>oug :PlugUpgrade<cr>
 nnoremap <leader>oud :PlugUpdate<cr>
 nnoremap <leader>oc  :PlugClean<cr>
 
-"Notes
-nnoremap <leader>n  :Note<space>
-nnoremap <leader>nd :DeleteNote!<cr>
-nnoremap <leader>ns :SearchNotes<space>
-vnoremap <leader>n  :NoteFromSelectedText<cr>
-
 "Misc
 nnoremap <silent> <leader>h :nohlsearch<cr><c-l>
 nnoremap <silent> <leader>l :ArgWrap<CR>
@@ -411,8 +414,11 @@ nnoremap <F5> :Tags<cr>
 nnoremap <F7> :set filetype=<cr>
 nnoremap <F9> :ALEFix<cr>
 
-"project
+"Project
 nnoremap <leader>p :SwitchProject<cr>
+
+"Specs
+
 
 "Fuzzy finder configuration
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
@@ -469,7 +475,7 @@ endfunction
 command! SwitchProject call s:switch_project()
 
 " }}}
-" {{{ ===== MISC
+" {{{ ===== FUNCTIONS
 "Move between splits
 func! s:moveToSplit(direction)
   func! s:move(direction)
