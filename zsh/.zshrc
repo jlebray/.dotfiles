@@ -4,7 +4,7 @@ export EDITOR=`which nvim`
 export PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig
 export PATH="/Users/johan/.cargo/bin:$PATH"
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-# export PATH="/Users/johan/.rbenv/versions/2.4.3/bin:$PATH"
+export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
 export LANG="fr_FR"
 
 TIMEFMT='%J   %U  user %S system %P cpu %*E total'$'\n'\
@@ -41,13 +41,13 @@ COMPLETION_WAITING_DOTS="true"
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
-PROJECT_PATHS=(~/Code)
+PROJECT_PATHS=(~/code)
 
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(bundler git gitfast git-flow pj rails colorize osx)
+plugins=(bundler git gitfast git-flow pj colorize osx)
 
 # User configuration
 
@@ -86,11 +86,13 @@ function work_in_progress_prompt() {
   fi
 }
 
-PROMPT='%{$fg_bold[green]%}$(git_prompt_info)${ret_status}%{$fg_bold[green]%}%p %{$fg[cyan]%}%c%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} %{$reset_color%}'
+PROMPT='%{$fg_bold[cyan]%}%c %{$fg_bold[green]%}$(git_prompt_info)${ret_status}%{$fg_bold[green]%}%p%{$fg_bold[red]%}$(work_in_progress_prompt)%{$fg_bold[blue]%} %{$reset_color%}
+%{$fg[cyan]%}➜%{$reset_color%} '
 
 eval "$(rbenv init -)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
 alias v='nvim'
 alias vterm='nvim -c DefaultWorkspace'
 alias gpl='git pull'
@@ -104,12 +106,20 @@ alias dbm='rake db:migrate'
 alias dbs='rake db:migrate:status'
 alias dbr='rake db:rollback'
 
+alias rgm='rails generate migration'
+
 alias fzf='fzf --height 80%'
 
 alias rs='rails server -b 0.0.0.0 -p 3000 -e development'
+alias rc='rails console'
 
-function clean_old_branches() {
-  git branch --no-color -vv | awk '/: gone]/{print $1}' | xargs git branch -D
+function htail() {
+  read input
+
+  tail=$(grep 'Run heroku logs' <<< $input | sed -E 's:Run (.*) to view.*:\1 --tail:')
+  echo "Running \`$tail\`..."
+
+  eval $tail
 }
 
 function hstaging() {
@@ -125,15 +135,15 @@ function hprod() {
 }
 
 function hdstaging() {
-  heroku run:detached "$@" -a shopmium-staging
+  heroku run:detached "$@" -a shopmium-staging | htail
 }
 
 function hdtest() {
-  heroku run:detached "$@" -a shopmium-sandbox
+  heroku run:detached "$@" -a shopmium-sandbox | htail
 }
 
 function hdprod() {
-  heroku run:detached "$@" -a shopmium
+  heroku run:detached "$@" -a shopmium | htail
 }
 
 function rcstaging() {
@@ -187,7 +197,18 @@ fco() {
 
 # fgm - git merge
 fgm() {
-  git branch | cut -c3- | fzf | xargs git merge
+  local tags branches target
+  tags=$(
+    git tag | awk '{print "\x1b[31;1mtag\x1b[m\t" $1}') || return
+  branches=$(
+    git branch --all | grep -v HEAD             |
+    sed "s/.* //"    | sed "s#remotes/[^/]*/##" |
+    sort -u          | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
+  target=$(
+    (echo "$tags"; echo "$branches") |
+    fzf-tmux -l30 -- --no-hscroll --ansi +m -d "\t" -n 2) || return
+
+  git merge "$target"
 }
 
 # fshow - git commit browser (enter for show, ctrl-d for diff, ctrl-r for reset, ` toggles sort)
@@ -228,8 +249,8 @@ ftags() {
 # fe - fuzzy file edit
 fe() {
   local file
-  file=$(fzf-tmux --query="$1" --select-1 --exit-0)
-  [ -n "$file" ] && ${EDITOR:-vim} "$file"
+  file=$(fzf --query="$1" --select-1 --exit-0)
+  [ -n "$file" ] && ${EDITOR:-nvim} "$file"
 }
 
 git_cleanup() {
