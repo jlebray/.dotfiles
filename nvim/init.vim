@@ -2,7 +2,9 @@
 " {{{ ===== SETTINGS
 syntax on
 set autoindent
+set autoread
 set breakindent
+set cc=80,100
 set complete=.,w,b,u,t,i
 set cursorline
 set dictionary="/usr/dict/words"
@@ -44,15 +46,17 @@ if exists('&inccommand')
   set inccommand=split
 endif
 
-autocmd BufRead,BufNewFile *.{arb} set filetype=ruby
-autocmd BufRead,BufNewFile *.{ecr} set filetype=html
-autocmd FileType ruby set omnifunc=rubycomplete#Complete
-autocmd FileType ruby let g:rubycomplete_buffer_loading=1
-autocmd FileType ruby let g:rubycomplete_classes_in_global=1
-autocmd FileType ruby set iskeyword+=!,?
-autocmd BufRead,BufNewFile *.{tex} set spell breakindent linebreak
-autocmd BufRead,BufNewFile *.scss.css setfiletype scss
-autocmd BufRead,BufNewFile *.less setfiletype css
+augroup filetypes_stuff
+  autocmd BufRead,BufNewFile *.{arb} set filetype=ruby
+  autocmd BufRead,BufNewFile *.{ecr} set filetype=html
+  autocmd FileType ruby set omnifunc=rubycomplete#Complete
+  autocmd FileType ruby let g:rubycomplete_buffer_loading=1
+  autocmd FileType ruby let g:rubycomplete_classes_in_global=1
+  autocmd FileType ruby set iskeyword+=!,?
+  autocmd BufRead,BufNewFile *.{tex} set spell breakindent linebreak
+  autocmd BufRead,BufNewFile *.scss.css setfiletype scss
+  autocmd BufRead,BufNewFile *.less setfiletype css
+augroup END
 " }}}
 " {{{ ===== PLUGINS
 " {{{ Sources
@@ -65,7 +69,7 @@ endif
 
 call plug#begin('~/.config/nvim/plugged')
 
-"❤️
+" ❤️
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug '/usr/local/opt/fzf'
@@ -75,75 +79,73 @@ Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-dadbod'
 Plug 'tpope/vim-dispatch'
 
-"statusline
+" statusline
 Plug 'itchyny/lightline.vim'
 
-"text manipulation
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' } "Fuzzy completion
-Plug 'tpope/vim-repeat'                "Better repeat
-Plug 'tpope/vim-surround'              "surround verb
-Plug 'tpope/vim-commentary'            "Easy comment
-Plug 'junegunn/vim-easy-align'         "easy align
-Plug 'kana/vim-textobj-user'           "custom blocks
-Plug 'bronson/vim-trailing-whitespace' "remove whitespace
-Plug 'FooSoft/vim-argwrap'             "Line splitting
-Plug 'tpope/vim-endwise'               "smart ends
-Plug 'tommcdo/vim-exchange'            "cx/X to exchange
-Plug 'adelarsq/vim-matchit'            "Better % match
-Plug 'tpope/vim-abolish'               "Smart replace with :S
+" text manipulation
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' } " Fuzzy completion
+Plug 'tpope/vim-repeat'                                       " Better repeat
+Plug 'tpope/vim-surround'                                     " surround verb
+Plug 'tpope/vim-commentary'                                   " Easy comment
+Plug 'junegunn/vim-easy-align'                                " easy align
+Plug 'kana/vim-textobj-user'                                  " custom blocks
+Plug 'bronson/vim-trailing-whitespace'                        " remove whitespace
+Plug 'FooSoft/vim-argwrap'                                    " Line splitting
+Plug 'tpope/vim-endwise'                                      " smart ends
+Plug 'tommcdo/vim-exchange'                                   " cx/X to exchange
+Plug 'tpope/vim-abolish'                                      " Smart replace with :S, case switching
 Plug 'terryma/vim-expand-region'
 Plug 'AndrewRadev/splitjoin.vim'
 
-"tools
+" tools
 Plug 'beloglazov/vim-online-thesaurus'
-Plug 'sbdchd/vim-run'                  "Run scripts
+Plug 'sbdchd/vim-run'                                         " Run scripts
 Plug 'janko/vim-test'
 Plug 'sheerun/vim-polyglot'
 Plug 'kshenoy/vim-signature'
-Plug 'jlebray/neoterm'                 "Fast access to terminal
-Plug 'kepbod/quick-scope'              "highlight fF
+Plug 'kassio/neoterm'                                        " Fast access to terminal
+Plug 'kepbod/quick-scope'                                     " highlight fF
 Plug 'simnalamburt/vim-mundo'
 
-"snippets
+" snippets
 Plug 'Shougo/neosnippet'
 Plug 'jlebray/snippets'
 
-"errors
+" errors
 Plug 'w0rp/ale'
 
-"Git
+" Git
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-rhubarb'
 Plug 'mhinz/vim-signify'
 Plug 'junegunn/gv.vim'
 Plug 'jreybert/vimagit'
 
-"HTML
+" HTML
 Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
-Plug 'cakebaker/scss-syntax.vim'
-Plug 'vim-scripts/liquid.vim'          "Liquid syntax
+Plug 'vim-scripts/liquid.vim'                                 " Liquid syntax
 Plug 'ap/vim-css-color'
 
-"Ruby
+" Ruby
 Plug 'nelstrom/vim-textobj-rubyblock'
 Plug 'tpope/vim-rails'
 
-"Clojure
+" Clojure
 Plug 'tpope/vim-fireplace'
 
-"Writing
+" Writing
 Plug 'junegunn/goyo.vim'
 Plug 'reedes/vim-pencil'
 
-"Themes
+" Themes
 Plug 'jlebray/spacemacs-theme.vim'
 Plug 'joshdick/onedark.vim'
 Plug 'pgdouyon/vim-yin-yang'
 
-"Prez
+" Prez
 Plug 'vim-scripts/SyntaxRange'
 
-"Deoplete plugins
+" Deoplete plugins
 Plug 'deoplete-plugins/deoplete-tag'
 
 call plug#end()
@@ -172,7 +174,7 @@ let g:deoplete#tag#cache_limit_size = 5000000
 call deoplete#custom#option('max_list', 30)
 
 call deoplete#custom#source('tag', 'rank', 10)
-call deoplete#custom#source('buffer', 'rank', 100)
+call deoplete#custom#source('buffer', 'rank', 9998)
 call deoplete#custom#source('neosnippet', 'rank', 9999)
 
 call deoplete#custom#var('buffer', { 'require_same_filetype': v:false })
@@ -197,18 +199,9 @@ function! s:neosnippet_jump()
   endif
 endfunction
 
-function! s:autocomplete_end()
-  if pumvisible()
-    return "\<C-y>"
-  else
-    return "\<CR>"
-  endif
-endfunction
-
 imap <expr><TAB> <SID>neosnippet_complete()
 imap <expr><C-j> <SID>neosnippet_jump()
 smap <expr><C-j> <SID>neosnippet_jump()
-imap <expr><CR> <SID>autocomplete_end()
 
 "argwrap
 let g:argwrap_padded_braces = '{'
@@ -245,7 +238,7 @@ let g:magit_default_sections = ['info', 'commit', 'staged', 'unstaged']
 
 "statusline
 let g:lightline = {
-      \ 'colorscheme': 'wombat',
+      \ 'colorscheme': 'onedark',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
       \             [ 'readonly', 'filename', 'modified' ] ]
@@ -289,149 +282,18 @@ let g:WhiplashProjectsDir = "~/Code/"
 let test#strategy = "dispatch"
 " let test#ruby#rspec#options = "--format progress --require ~/code/rspec_support/quickfix_formatter.rb --format QuickfixFormatter --out ~/code/rspec_support/quickfix.out"
 
-" }}}
-" }}}
-" {{{ ===== THEME
-set background=dark
-" colorscheme spacemacs-theme
-colorscheme onedark
-highlight ExtraWhitespace guibg=#990000 ctermbg=red
-highlight TermCursor ctermfg=red guifg=red
-
-" }}}
-" {{{ ===== MAPPINGS
-"Leader = Spacebar
-let mapleader = " "
-let maplocalleader = ","
-
-"Move between visual lines BUT keep correct count
-nnoremap <expr> j v:count ? 'j' : 'gj'
-nnoremap <expr> k v:count ? 'k' : 'gk'
-vnoremap <expr> j v:count ? 'j' : 'gj'
-vnoremap <expr> k v:count ? 'k' : 'gk'
-
-"Keep selection when indenting
-vnoremap < <gv
-vnoremap > >gv
-
-"Highlight selection
-vnoremap * y:let @/ = @"<CR>
-
-"Move between quickfix
-nnoremap <M-h> :cprev<cr>
-nnoremap ˙ :cprev<cr>
-nnoremap <M-j> :lnext<cr>
-nnoremap ∆ :lnext<cr>
-nnoremap <M-k> :lprev<cr>
-nnoremap ˚ :lprev<cr>
-nnoremap <M-l> :cnext<cr>
-nnoremap ¬ :cnext<cr>
-
-"Emacs movement in insertion
-inoremap <M-b> <C-o>b
-inoremap ∫ <C-o>b
-inoremap <M-f> <C-o>f
-inoremap ƒ <C-o>b
-inoremap <M-a> <C-o>(
-inoremap å <C-o>(
-inoremap <M-e> <C-o>)
-inoremap ´ <C-o>)
-inoremap <M-{> <C-o>{
-inoremap “ <C-o>{
-inoremap <M-}> <C-o>}
-inoremap ‘ <C-o>}
-
-"J is used to switch tabs, so use C-n to join lines
-nnoremap <c-n> J
-
-"Run current file
-vnoremap <leader>e :TREPLSendSelection<cr>
-nnoremap <leader>e :TREPLSendFile<cr>
-
-vnoremap <leader>y "+y
-nnoremap Y y$
-
-"files
-nnoremap <leader>s :w<cr>
-nnoremap <leader>f :Files<cr>
-nnoremap <leader>r :Move <c-R>%
-nnoremap <leader>x :Unlink<cr>
-nnoremap <leader>n :Rg<cr>
-nnoremap <leader>u :MundoToggle<cr>
-vnoremap 1 "hy:Rg <C-R>h<cr>
-vnoremap <F5> "hy:Tags <C-R>h<cr>
-vnoremap / "hy/<C-R>h
-
-"Buffers
-nnoremap <leader>b :Buffers<cr>
-nnoremap <tab> <C-^>
-nnoremap <C-p> <tab>
-nnoremap <leader>/ :BLines<cr>
-
-"Window
-nnoremap <silent> <leader>1 :only<cr>
-nnoremap <silent> <leader>2 :vsplit<cr>
-nnoremap <silent> <leader>3 :split<cr>
-nnoremap <silent> <leader>d :q<cr>
-
-"Files
-nnoremap K :tabnext<cr>
-nnoremap J :tabprev<cr>
-
-"Align
-xmap ga <Plug>(LiveEasyAlign)
-nmap ga <Plug>(LiveEasyAlign)
-
-"Git
-nnoremap <leader>gs :Gstatus<cr>
-nnoremap <leader>gc :Gcommit<cr>
-nnoremap <leader>gp :Gpush<cr>
-nnoremap <leader>gb :Gblame<cr>
-
-"DB
-nnoremap <leader>q :DB postgres://postgres:4242424242@localhost:5432/pg_development<space>
-
-"NeoVim
-nnoremap <leader>vr :source ~/.config/nvim/init.vim<cr>
-nnoremap <leader>ve :tabedit ~/.config/nvim/init.vim<cr>
-nnoremap <leader>vq :qa!<cr>
-
-"Plug
-nnoremap <leader>oi  :PlugInstall<cr>
-nnoremap <leader>oug :PlugUpgrade<cr>
-nnoremap <leader>oud :PlugUpdate<cr>
-nnoremap <leader>oc  :PlugClean<cr>
-
-"Misc
-nnoremap <silent> <leader>h :nohlsearch<cr><c-l>
-nnoremap <silent> <leader>l :ArgWrap<CR>
-
-"Function keys
-nnoremap <F2> :tabnew<cr>
-nnoremap <F3> :Ttoggle<cr>
-nnoremap <F4> :Magit<cr>
-nnoremap <F5> :Tags<cr>
-nnoremap <F7> :set filetype=<cr>
-nnoremap <F9> :ALEFix<cr>
-
-"Project
-nnoremap <leader>p :SwitchProject<cr>
-
-"Specs
-
-
 "Fuzzy finder configuration
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
 let g:fzf_files_options =
   \ '--preview "(coderay {} || cat {}) 2> /dev/null | head -'.&lines.'"'
 
 " CTRL-A CTRL-Q to select all and build quickfix list
-
 function! s:build_quickfix_list(lines)
   call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
   copen
   cc
 endfunction
+
 
 let g:fzf_action = {
   \ 'ctrl-q': function('s:build_quickfix_list'),
@@ -441,38 +303,14 @@ let g:fzf_action = {
 
 let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 
-"Remove search highlighting
-nnoremap * *<c-o>
-
-"CTags
-nnoremap <C-]> g<C-]>
-
-nnoremap <Leader>w :FixWhitespace<CR>
-nnoremap <leader><leader> :T<space>
-nnoremap <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
-\ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
-\ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
-
-"Switch project
-function! s:open_file_in_project(project)
-  exe "cd ~/Code/" . a:project
-  call fzf#vim#files(".")
-  call feedkeys('i')
-endfunction
-
-function! s:switch_project()
-  try
-    call fzf#run({
-    \ 'source':  'ls ~/Code/',
-    \ 'sink':    function('s:open_file_in_project')})
-  catch
-    echohl WarningMsg
-    echom v:exception
-    echohl None
-  endtry
-endfunction
-
-command! SwitchProject call s:switch_project()
+" }}}
+" }}}
+" {{{ ===== THEME
+set background=dark
+" colorscheme spacemacs-theme
+colorscheme onedark
+highlight ExtraWhitespace guibg=#990000 ctermbg=red
+highlight TermCursor ctermfg=red guifg=red
 
 " }}}
 " {{{ ===== FUNCTIONS
@@ -514,6 +352,180 @@ function! FixStruct()
   execute "s/$/\r"
 endfunction
 command! FixStruct call FixStruct()
+
+"Alias commands
+fun! SetupCommandAlias(from, to)
+  exec 'cnoreabbrev <expr> '.a:from
+        \ .' ((getcmdtype() is# ":" && getcmdline() is# "'.a:from.'")'
+        \ .'? ("'.a:to.'") : ("'.a:from.'"))'
+endfun
+
+"Switch project
+function! s:open_file_in_project(project)
+  exe "cd ~/Code/" . a:project
+  call fzf#vim#files(".")
+  call feedkeys('i')
+endfunction
+
+function! s:switch_project()
+  try
+    call fzf#run({
+    \ 'source':  'ls ~/Code/',
+    \ 'sink':    function('s:open_file_in_project')})
+  catch
+    echohl WarningMsg
+    echom v:exception
+    echohl None
+  endtry
+endfunction
+
+command! SwitchProject call s:switch_project()
+" }}}
+" {{{ ===== MAPPINGS
+"Leader = Spacebar
+let mapleader = " "
+let maplocalleader = ","
+
+"Move between visual lines BUT keep correct count
+nnoremap <expr> j v:count ? 'j' : 'gj'
+nnoremap <expr> k v:count ? 'k' : 'gk'
+vnoremap <expr> j v:count ? 'j' : 'gj'
+vnoremap <expr> k v:count ? 'k' : 'gk'
+
+"Keep selection when indenting
+vnoremap < <gv
+vnoremap > >gv
+
+"Highlight selection
+vnoremap * y:let @/ = @"<CR>
+
+"Move between quickfix
+nnoremap <M-h> :cprev<cr>
+nnoremap ˙ :cprev<cr>
+nnoremap <M-j> :lnext<cr>
+nnoremap ∆ :lnext<cr>
+nnoremap <M-k> :lprev<cr>
+nnoremap ˚ :lprev<cr>
+nnoremap <M-l> :cnext<cr>
+nnoremap ¬ :cnext<cr>
+
+"Emacs like movements
+inoremap <M-b> <C-o>b
+inoremap ∫ <C-o>b
+inoremap <M-f> <C-o>f
+inoremap ƒ <C-o>b
+inoremap <M-a> <C-o>(
+inoremap å <C-o>(
+inoremap <M-e> <C-o>)
+inoremap ´ <C-o>)
+inoremap <M-{> <C-o>{
+inoremap “ <C-o>{
+inoremap <M-}> <C-o>}
+inoremap ‘ <C-o>}
+inoremap <M-o> <ESC>o
+inoremap ø <ESC>o
+inoremap <M-O> <ESC>O
+inoremap Ø <ESC>O
+inoremap <M-A> <ESC>A
+inoremap Å <ESC>A
+
+"J is used to switch tabs, so use C-n to join lines
+nnoremap <c-n> J
+
+"Run current file
+vnoremap <leader>e :TREPLSendSelection<cr>
+nnoremap <leader>e :TREPLSendFile<cr>
+
+vnoremap <leader>y "+y
+nnoremap Y y$
+
+"files
+nnoremap <leader>s :w<cr>
+nnoremap <leader>f :Files<cr>
+nnoremap <leader>m :Move <c-R>%
+nnoremap <leader>x :Unlink<cr>
+nnoremap <leader>n :Rg<cr>
+nnoremap <leader>u :MundoToggle<cr>
+vnoremap 1 "hy:Rg <C-R>h<cr>
+vnoremap <F5> "hy:Tags <C-R>h<cr>
+vnoremap / "hy/<C-R>h
+
+"Buffers
+nnoremap <leader>b :Buffers<cr>
+nnoremap <tab> <C-^>
+nnoremap <C-p> <tab>
+nnoremap <leader>/ :BLines<cr>
+
+"Window
+nnoremap <silent> <leader>1 :only<cr>
+nnoremap <silent> <leader>2 :vsplit<cr>
+nnoremap <silent> <leader>3 :split<cr>
+nnoremap <silent> <leader>d :q<cr>
+
+"Files
+nnoremap K :tabnext<cr>
+nnoremap J :tabprev<cr>
+
+"Align
+xmap ga <Plug>(LiveEasyAlign)
+nmap ga <Plug>(LiveEasyAlign)
+
+"Git
+nnoremap <leader>gs :Gstatus<cr>
+nnoremap <leader>gc :Gcommit<cr>
+nnoremap <leader>gp :Gpush<cr>
+nnoremap <leader>gb :Gblame<cr>
+
+"DB
+nnoremap <leader>q :DB postgres://postgres:4242424242@localhost:5432/pg_development<space>
+vnoremap <leader>q :DB postgres://postgres:4242424242@localhost:5432/pg_development
+
+"NeoVim
+nnoremap <leader>vr :source ~/.config/nvim/init.vim<cr>
+nnoremap <leader>ve :tabedit ~/.config/nvim/init.vim<cr>
+nnoremap <leader>vq :qa!<cr>
+
+"Plug
+nnoremap <leader>oi  :PlugInstall<cr>
+nnoremap <leader>oug :PlugUpgrade<cr>
+nnoremap <leader>oud :PlugUpdate<cr>
+nnoremap <leader>oc  :PlugClean<cr>
+
+"Misc
+nnoremap <silent> <leader>h :nohlsearch<cr><c-l>
+nnoremap <silent> <leader>l :ArgWrap<CR>
+
+"Function keys
+nnoremap <F2> :tabnew<cr>
+nnoremap <F3> :Ttoggle<cr>
+nnoremap <F4> :Magit<cr>
+nnoremap <F5> :Tags<cr>
+nnoremap <F7> :set filetype=<cr>
+nnoremap <F9> :ALEFix<cr>
+nnoremap <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+\ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+\ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+
+"Project
+nnoremap <leader>p :SwitchProject<cr>
+
+"Specs
+nnoremap <leader>tt :TestFile<cr>
+nnoremap <leader>tl :TestLast<cr>
+nnoremap <leader>tn :TestNearest<cr>
+nnoremap <leader>to :TestVisit<cr>
+
+"Commands
+call SetupCommandAlias("Ag","Rg")
+
+"Remove search highlighting
+nnoremap * *<c-o>
+
+"CTags
+nnoremap <C-]> g<C-]>
+
+nnoremap <Leader>w :FixWhitespace<CR>
+nnoremap <leader><leader> :T<space>
 " }}}
 " {{{ ===== CUSTOM BLOCKS
 call textobj#user#plugin('erb', {
