@@ -7,7 +7,7 @@ set breakindent
 set cc=80,100
 set complete=.,w,b,u,t,i
 set cursorline
-set dictionary="/usr/dict/words"
+set dictionary='/usr/dict/words'
 set expandtab
 set foldmethod=marker
 set hidden
@@ -34,12 +34,12 @@ set splitright
 set tabstop=2
 set timeoutlen=500 ttimeoutlen=0
 set title
-set undofile
 set undodir=~/.vim/undo
+set undofile
 set visualbell
 set wildignorecase
 set wildmode=list:full,full
-if (has("termguicolors"))
+if (has('termguicolors'))
   set termguicolors
 endif
 if exists('&inccommand')
@@ -49,6 +49,7 @@ endif
 augroup filetypes_stuff
   autocmd BufRead,BufNewFile *.{arb} set filetype=ruby
   autocmd BufRead,BufNewFile *.{ecr} set filetype=html
+  autocmd BufRead,BufNewFile *.{vim} set foldmethod=marker
   autocmd FileType ruby set omnifunc=rubycomplete#Complete
   autocmd FileType ruby let g:rubycomplete_buffer_loading=1
   autocmd FileType ruby let g:rubycomplete_classes_in_global=1
@@ -96,10 +97,10 @@ Plug 'tommcdo/vim-exchange'                                   " cx/X to exchange
 Plug 'tpope/vim-abolish'                                      " Smart replace with :S, case switching
 Plug 'terryma/vim-expand-region'
 Plug 'AndrewRadev/splitjoin.vim'
+Plug 'vim-scripts/LargeFile'                                  "Edit large files
 
 " tools
 Plug 'beloglazov/vim-online-thesaurus'
-Plug 'sbdchd/vim-run'                                         " Run scripts
 Plug 'janko/vim-test'
 Plug 'sheerun/vim-polyglot'
 Plug 'kshenoy/vim-signature'
@@ -448,7 +449,6 @@ nnoremap <leader>n :Rg<cr>
 nnoremap <leader>u :MundoToggle<cr>
 vnoremap 1 "hy:Rg <C-R>h<cr>
 vnoremap <F5> "hy:Tags <C-R>h<cr>
-vnoremap / "hy/<C-R>h
 
 "Buffers
 nnoremap <leader>b :Buffers<cr>

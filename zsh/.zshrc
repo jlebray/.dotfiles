@@ -1,6 +1,7 @@
 # Path to your oh-my-zsh installation.
 export ZSH=/Users/johan/.oh-my-zsh
 export EDITOR=`which nvim`
+export VISUAL="nvim"
 export PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig
 export PATH="/Users/johan/.cargo/bin:$PATH"
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
@@ -182,22 +183,18 @@ function fgps {
 
 # fco - checkout git branch/tag
 fco() {
-  local tags branches target
-  tags=$(
-    git tag | awk '{print "\x1b[31;1mtag\x1b[m\t" $1}') || return
-  branches=$(
-    git branch --all | grep -v HEAD             |
-    sed "s/.* //"    | sed "s#remotes/[^/]*/##" |
-    sort -u          | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
-  target=$(
-    (echo "$tags"; echo "$branches") |
-    fzf-tmux -l30 -- --no-hscroll --ansi +m -d "\t" -n 2) || return
-  git checkout $(echo "$target" | awk '{print $2}')
+  git checkout $(select_branch_or_tag)
 }
 
 # fgm - git merge
 fgm() {
+  git checkout $(select_branch_or_tag)
+}
+
+# helper to select branch
+select_branch_or_tag() {
   local tags branches target
+
   tags=$(
     git tag | awk '{print "\x1b[31;1mtag\x1b[m\t" $1}') || return
   branches=$(
@@ -206,9 +203,9 @@ fgm() {
     sort -u          | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
   target=$(
     (echo "$tags"; echo "$branches") |
-    fzf-tmux -l30 -- --no-hscroll --ansi +m -d "\t" -n 2) || return
+    fzf-tmux -l30 -- --no-hscroll --ansi +m -d "\t" -n 2 $argv) || return
 
-  git merge "$target"
+  echo "$target" | awk '{print $2}'
 }
 
 # fshow - git commit browser (enter for show, ctrl-d for diff, ctrl-r for reset, ` toggles sort)
@@ -218,7 +215,7 @@ fshow() {
       git log --color=always \
         --format="%C(auto)%h%d %s %C(black)%C(bold)%cr %C(red)%an" "$@" |
       fzf --ansi --multi --no-sort --reverse --query="$q" --tiebreak=index \
-          --print-query --expect=ctrl-d,ctrl-r --toggle-sort=\`); do
+          --print-query --expect=ctrl-d,ctrl-r,ctrl-o --toggle-sort=\`); do
     q=$(head -1 <<< "$out")
     k=$(head -2 <<< "$out" | tail -1)
     shas=$(sed '1,2d;s/^[^a-z0-9]*//;/^$/d' <<< "$out" | awk '{print $1}')
@@ -227,6 +224,8 @@ fshow() {
       git diff --color=always $shas | less -R
     elif [ "$k" = 'ctrl-r' ]; then
       git reset $shas
+    elif [ "$k" = 'ctrl-o' ]; then
+      git checkout $shas
     else
       for sha in $shas; do
         git show --color=always $sha | less -R
@@ -255,6 +254,10 @@ fe() {
 
 git_cleanup() {
   git fetch -p && git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D
+}
+
+function git_reviews() {
+  hub pr list -f "%pC%>(8)%i   %au %Creset%t  %l  %U%n" --color=always | grep -v 'jlebray' | rg 'review level' --color never
 }
 
 function prespec() {

@@ -12,8 +12,6 @@
   loc = log -w -p
   un = reset HEAD
   tags = tag -l
-  branches = branch -a
-  remotes = remote -v
 [fetch]
   prune = true
 [push]
