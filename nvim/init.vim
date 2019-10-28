@@ -1,5 +1,5 @@
 " NeoVim init - Johan Le Bray
-" {{{ ===== SETTINGS
+"  {{{ ===== SETTINGS
 syntax on
 set autoindent
 set autoread
@@ -21,8 +21,10 @@ set nobackup
 set noswapfile
 set number
 set relativenumber
+set rtp+=/home/johan/.fzf
 set ruler
 set scrolloff=10
+set sessionoptions+=tabpages,globals
 set shiftround
 set shiftwidth=2
 set smartcase
@@ -50,14 +52,16 @@ augroup filetypes_stuff
   autocmd BufRead,BufNewFile *.{arb} set filetype=ruby
   autocmd BufRead,BufNewFile *.{ecr} set filetype=html
   autocmd BufRead,BufNewFile *.{vim} set foldmethod=marker
-  autocmd FileType ruby set omnifunc=rubycomplete#Complete
-  autocmd FileType ruby let g:rubycomplete_buffer_loading=1
-  autocmd FileType ruby let g:rubycomplete_classes_in_global=1
   autocmd FileType ruby set iskeyword+=!,?
   autocmd BufRead,BufNewFile *.{tex} set spell breakindent linebreak
   autocmd BufRead,BufNewFile *.scss.css setfiletype scss
   autocmd BufRead,BufNewFile *.less setfiletype css
 augroup END
+
+"python
+let g:python3_host_prog = '/home/johan/.pyenv/versions/neovim/bin/python3'
+let g:python_host_prog = '/home/johan/.pyenv/versions/neovim2/bin/python'
+
 " }}}
 " {{{ ===== PLUGINS
 " {{{ Sources
@@ -71,7 +75,7 @@ endif
 call plug#begin('~/.config/nvim/plugged')
 
 " ❤️
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf', { 'dir': '/home/johan/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug '/usr/local/opt/fzf'
 Plug 'tpope/vim-vinegar'
@@ -79,6 +83,7 @@ Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-dadbod'
 Plug 'tpope/vim-dispatch'
+Plug 'tpope/vim-projectionist'
 
 " statusline
 Plug 'itchyny/lightline.vim'
@@ -107,6 +112,9 @@ Plug 'kshenoy/vim-signature'
 Plug 'kassio/neoterm'                                        " Fast access to terminal
 Plug 'kepbod/quick-scope'                                     " highlight fF
 Plug 'simnalamburt/vim-mundo'
+Plug 'gcmt/taboo.vim'
+Plug 'xolox/vim-misc'
+Plug 'xolox/vim-notes'
 
 " snippets
 Plug 'Shougo/neosnippet'
@@ -131,6 +139,10 @@ Plug 'ap/vim-css-color'
 Plug 'nelstrom/vim-textobj-rubyblock'
 Plug 'tpope/vim-rails'
 
+" Python
+Plug 'szymonmaszke/vimpyter'
+Plug '5long/pytest-vim-compiler'
+
 " Clojure
 Plug 'tpope/vim-fireplace'
 
@@ -148,13 +160,17 @@ Plug 'vim-scripts/SyntaxRange'
 
 " Deoplete plugins
 Plug 'deoplete-plugins/deoplete-tag'
+Plug 'ncm2/float-preview.nvim'
+
+" Tmux integration
+Plug 'christoomey/vim-tmux-navigator'
 
 call plug#end()
 " }}}
 " {{{ Options
-if executable('ag')
-  set grepprg=ag\ --nogroup\ --nocolor
-  let g:ackprg = 'ag --vimgrep'      "The silver searcher
+if executable("rg")
+  set grepprg=rg\ --vimgrep\ --no-heading
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
 let g:netrw_localrmdir='rm -r'       "Delete non empty directories with netrw
 
@@ -175,13 +191,20 @@ let g:deoplete#tag#cache_limit_size = 5000000
 call deoplete#custom#option('max_list', 30)
 
 call deoplete#custom#source('tag', 'rank', 10)
+call deoplete#custom#source('ale', 'rank', 15)
 call deoplete#custom#source('buffer', 'rank', 9998)
 call deoplete#custom#source('neosnippet', 'rank', 9999)
 
 call deoplete#custom#var('buffer', { 'require_same_filetype': v:false })
+let g:float_preview#docked = 0
+
+"vim-dispatch
+let g:dispatch_compilers = {
+      \ 'pytest': 'pytest',
+      \ 'py.test': 'pytest'}
 
 "neosnippets
-let g:neosnippet#snippets_directory = "/Users/johan/.config/nvim/plugged/snippets/neosnippets/"
+let g:neosnippet#snippets_directory = "/home/johan/.config/nvim/plugged/snippets/neosnippets/"
 function! s:neosnippet_complete()
   if neosnippet#expandable()
     return "\<Plug>(neosnippet_expand)"
@@ -214,6 +237,8 @@ let g:ruby_indent_assignment_style = 'variable'
 
 "neoterm
 let g:neoterm_default_mod = 'vertical'
+let g:neoterm_term_per_tab = 1 " Different terminal for each tab
+let g:neoterm_auto_repl_cmd = 0 " Do not launch rails console on TREPLsend
 
 "ALE
 let g:ale_fixers = {
@@ -223,11 +248,14 @@ let g:ale_fixers = {
 \   'json': ['fixjson'],
 \   'ruby': ['rubocop'],
 \   'rust': ['rustfmt'],
+\   'python': ['autopep8'],
 \}
+
 let g:ale_enabled = 1
 let g:ale_set_highlights = 0
 let g:ale_fix_on_save = 0
 let g:ale_ruby_rubocop_executable = 'bundle'
+let g:ale_echo_msg_format = '%linter% — %s'
 
 "highlight
 let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
@@ -277,11 +305,11 @@ call expand_region#custom_text_objects('ruby', {
       \ })
 
 "vim-whiplash
-let g:WhiplashProjectsDir = "~/Code/"
+let g:WhiplashProjectsDir = "~/code/"
 
 "vim-test
-let test#strategy = "dispatch"
-" let test#ruby#rspec#options = "--format progress --require ~/code/rspec_support/quickfix_formatter.rb --format QuickfixFormatter --out ~/code/rspec_support/quickfix.out"
+let test#strategy = "neoterm"
+let test#ruby#rspec#options = "--require spec_helper --require /home/johan/code/impacters-back/private/rspec_quickfix_formatter.rb --format QuickfixFormatter --profile 0"
 
 "Fuzzy finder configuration
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
@@ -304,6 +332,10 @@ let g:fzf_action = {
 
 let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 
+" Vimpyter
+autocmd Filetype ipynb nmap <silent><Leader>b :VimpyterInsertPythonBlock<CR>
+autocmd Filetype ipynb nmap <silent><Leader>j :VimpyterStartJupyter<CR>
+
 " }}}
 " }}}
 " {{{ ===== THEME
@@ -315,7 +347,13 @@ highlight TermCursor ctermfg=red guifg=red
 
 " }}}
 " {{{ ===== FUNCTIONS
-"Move between splits
+"Loop cnext
+command! Cnext try | cnext | catch | cfirst | catch | endtry
+command! Cprev try | cprev | catch | clast | catch | endtry
+command! Lnext try | lnext | catch | lfirst | catch | endtry
+command! Lprev try | lprev | catch | llast | catch | endtry
+
+"Move between splits (or exit term)
 func! s:moveToSplit(direction)
   func! s:move(direction)
     stopinsert
@@ -325,13 +363,19 @@ func! s:moveToSplit(direction)
   execute "tnoremap" "<silent>" "<C-" . a:direction . ">"
         \ "<C-\\><C-n>"
         \ ":call <SID>move(\"" . a:direction . "\")<CR>"
-  execute "nnoremap" "<silent>" "<C-" . a:direction . ">"
-        \ ":call <SID>move(\"" . a:direction . "\")<CR>"
+  " execute "nnoremap" "<silent>" "<C-" . a:direction . ">"
+  "       \ ":call <SID>move(\"" . a:direction . "\")<CR>"
 endfunc
 
 for dir in ["h", "j", "l", "k"]
   call s:moveToSplit(dir)
 endfor
+
+"Replace unicode codes by chars
+function! ReplaceUnicode()
+  %s/\\u\(\x\{4\}\)/\=nr2char('0x'.submatch(1),1)/g
+endfunction
+command! ReplaceUnicode call ReplaceUnicode()
 
 "Format JSON
 function! FormatJSON()
@@ -345,7 +389,7 @@ func! SpecLine()
 endfunc
 command! SpecLine call SpecLine()
 
-"Fix db/structure.sql conflict
+"Fix db/structure.sql conflict TODO: Fix
 function! FixStruct()
   normal /<<<\<cr>kmajdd/===\<cr>dd/>>>\<cr>dd'akvG
   execute "sort u"
@@ -356,14 +400,18 @@ command! FixStruct call FixStruct()
 
 "Alias commands
 fun! SetupCommandAlias(from, to)
-  exec 'cnoreabbrev <expr> '.a:from
+  execute 'cnoreabbrev <expr> '.a:from
         \ .' ((getcmdtype() is# ":" && getcmdline() is# "'.a:from.'")'
         \ .'? ("'.a:to.'") : ("'.a:from.'"))'
 endfun
 
 "Switch project
+function! s:open_project(project)
+  execute "tcd ~/code/" . a:project
+  execute "TabooRename " . a:project
+endfunction
 function! s:open_file_in_project(project)
-  exe "cd ~/Code/" . a:project
+  execute "tcd ~/code/" . a:project
   call fzf#vim#files(".")
   call feedkeys('i')
 endfunction
@@ -371,16 +419,38 @@ endfunction
 function! s:switch_project()
   try
     call fzf#run({
-    \ 'source':  'ls ~/Code/',
-    \ 'sink':    function('s:open_file_in_project')})
+    \ 'source':  'ls ~/code/',
+    \ 'sink':    function('s:open_project')})
   catch
     echohl WarningMsg
     echom v:exception
     echohl None
   endtry
 endfunction
-
 command! SwitchProject call s:switch_project()
+
+"Remove non visible buffers
+function! DeleteInactiveBufs()
+    "From tabpagebuflist() help, get a list of all buffers in all tabs
+    let tablist = []
+    for i in range(tabpagenr('$'))
+        call extend(tablist, tabpagebuflist(i + 1))
+    endfor
+
+    "Below originally inspired by Hara Krishna Dara and Keith Roberts
+    "http://tech.groups.yahoo.com/group/vim/message/56425
+    let nWipeouts = 0
+    for i in range(1, bufnr('$'))
+        if bufexists(i) && !getbufvar(i,"&mod") && index(tablist, i) == -1
+        "bufno exists AND isn't modified AND isn't in the list of buffers open in windows and tabs
+            silent exec 'bwipeout' i
+            let nWipeouts = nWipeouts + 1
+        endif
+    endfor
+    echomsg nWipeouts . ' buffer(s) wiped out'
+endfunction
+command! DeleteInactiveBufs :call DeleteInactiveBufs()
+
 " }}}
 " {{{ ===== MAPPINGS
 "Leader = Spacebar
@@ -401,14 +471,14 @@ vnoremap > >gv
 vnoremap * y:let @/ = @"<CR>
 
 "Move between quickfix
-nnoremap <M-h> :cprev<cr>
-nnoremap ˙ :cprev<cr>
-nnoremap <M-j> :lnext<cr>
-nnoremap ∆ :lnext<cr>
-nnoremap <M-k> :lprev<cr>
-nnoremap ˚ :lprev<cr>
-nnoremap <M-l> :cnext<cr>
-nnoremap ¬ :cnext<cr>
+nnoremap <M-h> :Cprev<cr>
+nnoremap ˙ :Cprev<cr>
+nnoremap <M-j> :Lnext<cr>
+nnoremap ∆ :Lnext<cr>
+nnoremap <M-k> :Lprev<cr>
+nnoremap ˚ :Lprev<cr>
+nnoremap <M-l> :Cnext<cr>
+nnoremap ¬ :Cnext<cr>
 
 "Emacs like movements
 inoremap <M-b> <C-o>b
@@ -500,7 +570,9 @@ nnoremap <F2> :tabnew<cr>
 nnoremap <F3> :Ttoggle<cr>
 nnoremap <F4> :Magit<cr>
 nnoremap <F5> :Tags<cr>
-nnoremap <F7> :set filetype=<cr>
+nnoremap <F6> :Dispatch<cr>
+nnoremap <F7> :Make<cr>
+nnoremap <F8> :set filetype=<cr>
 nnoremap <F9> :ALEFix<cr>
 nnoremap <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
 \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
@@ -519,7 +591,7 @@ nnoremap <leader>to :TestVisit<cr>
 call SetupCommandAlias("Ag","Rg")
 
 "Remove search highlighting
-nnoremap * *<c-o>
+nnoremap * *N
 
 "CTags
 nnoremap <C-]> g<C-]>

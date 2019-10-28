@@ -1,12 +1,19 @@
 # Path to your oh-my-zsh installation.
-export ZSH=/Users/johan/.oh-my-zsh
+export ZSH=/home/johan/.oh-my-zsh
 export EDITOR=`which nvim`
 export VISUAL="nvim"
 export PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig
-export PATH="/Users/johan/.cargo/bin:$PATH"
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"
-export LANG="fr_FR"
+export LANG="en_US"
+export LANGUAGE=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+export ANDROID_HOME=/home/johan/Android/Sdk
+export JAVA_HOME=/usr/lib/jvm/oracle-java8-jdk-amd64
+
+export FZF_DEFAULT_COMMAND="rg --files --hidden"
+
+xcape -e 'Control_L=Escape'
 
 TIMEFMT='%J   %U  user %S system %P cpu %*E total'$'\n'\
 'avg shared (code):         %X KB'$'\n'\
@@ -48,7 +55,7 @@ PROJECT_PATHS=(~/code)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(bundler git gitfast git-flow pj colorize osx)
+plugins=(git gitfast git-flow pj colorize zsh-lazyload)
 
 # User configuration
 
@@ -95,7 +102,6 @@ eval "$(rbenv init -)"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 alias v='nvim'
-alias vterm='nvim -c DefaultWorkspace'
 alias gpl='git pull'
 alias gps='git push'
 alias gc='git commit'
@@ -111,8 +117,12 @@ alias rgm='rails generate migration'
 
 alias fzf='fzf --height 80%'
 
-alias rs='rails server -b 0.0.0.0 -p 3000 -e development'
+alias rs='rails server -p 4200 -e development'
 alias rc='rails console'
+
+# pbcopy on Linux
+alias pbcopy='xsel --clipboard --input'
+alias pbpaste='xsel --clipboard --output'
 
 function htail() {
   read input
@@ -335,16 +345,38 @@ function replace_all() {
   local from=$1
   local to=$2
 
-  ag -0 -l "$from" | xargs -0 perl -pi -e "s/$from/$to/g"
+  rg -l "$from" | xargs -0 perl -pi -e "s/$from/$to/g"
 }
 
+function start_elastic() {
+  (sudo sysctl -w vm.max_map_count=262144) && docker start d0
+}
+
+function start_rails() {
+  rails s -d -p 4100
+}
+
+function stop_rails() {
+  kill -9 $(lsof -i :4100 -t)
+}
+
+function restart_rails() {
+  stop_rails && start_rails
+}
 
 #iterm2 shell
 # test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 #source ~/.iterm2_shell_integration.`basename $SHELL`
 
 # # The next line updates PATH for the Google Cloud SDK.
-# if [ -f '/Users/johan/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/johan/Downloads/google-cloud-sdk/path.zsh.inc'; fi
+  # if [ -f '/Users/johan/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/johan/Downloads/google-cloud-sdk/path.zsh.inc'; fi
 
 # # The next line enables shell command completion for gcloud.
-# if [ -f '/Users/johan/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/johan/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
+  # if [ -f '/Users/johan/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/johan/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
+
+function load:nvm() {
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh --no-use"  # This loads nvm
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+}
+lazyload load:nvm nvm

@@ -1,7 +1,6 @@
 [user]
 	name = Johan Le Bray
-	email = johan.lebray@shopmium.com
-	signingkey = 7355373386496ADA
+	email = jlebray@explain.fr
 [alias]
   co = checkout
   br = branch
@@ -19,6 +18,7 @@
 [core]
 	editor = nvim
 	pager = diff-so-fancy | less --tabs=4 -RFX
+	excludesfile = /home/johan/.gitignore_global
 [color "diff-highlight"]
 	oldNormal = red bold
 	oldHighlight = red bold 52
