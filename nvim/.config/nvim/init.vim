@@ -61,7 +61,6 @@ augroup END
 "python
 let g:python3_host_prog = '/home/johan/.pyenv/versions/neovim/bin/python3'
 let g:python_host_prog = '/home/johan/.pyenv/versions/neovim2/bin/python'
-
 " }}}
 " {{{ ===== PLUGINS
 " {{{ Sources
@@ -267,7 +266,7 @@ let g:magit_default_sections = ['info', 'commit', 'staged', 'unstaged']
 
 "statusline
 let g:lightline = {
-      \ 'colorscheme': 'onedark',
+      \ 'colorscheme': 'one',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
       \             [ 'readonly', 'filename', 'modified' ] ]
@@ -335,6 +334,9 @@ let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 " Vimpyter
 autocmd Filetype ipynb nmap <silent><Leader>b :VimpyterInsertPythonBlock<CR>
 autocmd Filetype ipynb nmap <silent><Leader>j :VimpyterStartJupyter<CR>
+
+"vim-notes
+let g:notes_directories = ['~/.notes']
 
 " }}}
 " }}}
