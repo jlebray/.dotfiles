@@ -308,7 +308,6 @@ let g:WhiplashProjectsDir = "~/code/"
 
 "vim-test
 let test#strategy = "neoterm"
-let test#ruby#rspec#options = "--require spec_helper --require /home/johan/code/impacters-back/private/rspec_quickfix_formatter.rb --format QuickfixFormatter --profile 0"
 
 "Fuzzy finder configuration
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
@@ -337,6 +336,28 @@ autocmd Filetype ipynb nmap <silent><Leader>j :VimpyterStartJupyter<CR>
 
 "vim-notes
 let g:notes_directories = ['~/.notes']
+
+"vim-rails
+let g:rails_projections = {
+      \  "app/controllers/*_controller.rb": {
+      \      "test": [
+      \        "spec/requests/{}_spec.rb",
+      \        "spec/controllers/{}_controller_spec.rb",
+      \        "test/controllers/{}_controller_test.rb"
+      \      ],
+      \      "alternate": [
+      \        "spec/requests/{}_spec.rb",
+      \        "spec/controllers/{}_controller_spec.rb",
+      \        "test/controllers/{}_controller_test.rb"
+      \      ],
+      \   },
+      \   "spec/requests/*_spec.rb": {
+      \      "command": "request",
+      \      "alternate": "app/controllers/{}_controller.rb",
+      \      "template": "require 'rails_helper'\n\n" .
+      \        "RSpec.describe '{}' do\nend",
+      \   },
+      \ }
 
 " }}}
 " }}}
