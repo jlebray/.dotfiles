@@ -30,6 +30,7 @@ set shiftwidth=2
 set smartcase
 set smarttab
 set softtabstop=2
+set shell=/bin/bash
 set spelllang=fr
 set splitbelow
 set splitright
@@ -56,11 +57,13 @@ augroup filetypes_stuff
   autocmd BufRead,BufNewFile *.{tex} set spell breakindent linebreak
   autocmd BufRead,BufNewFile *.scss.css setfiletype scss
   autocmd BufRead,BufNewFile *.less setfiletype css
+  autocmd BufRead,BufNewFile *.{rest} set filetype=rest " for vim-rest-console
 augroup END
 
 "python
 let g:python3_host_prog = '/home/johan/.pyenv/versions/neovim/bin/python3'
 let g:python_host_prog = '/home/johan/.pyenv/versions/neovim2/bin/python'
+let g:ruby_host_prog = '/home/johan/.rbenv/shims/neovim-ruby-host'
 " }}}
 " {{{ ===== PLUGINS
 " {{{ Sources
@@ -164,6 +167,9 @@ Plug 'ncm2/float-preview.nvim'
 " Tmux integration
 Plug 'christoomey/vim-tmux-navigator'
 
+" HTTP
+Plug 'diepm/vim-rest-console'
+
 call plug#end()
 " }}}
 " {{{ Options
@@ -235,6 +241,7 @@ let g:ruby_indent_block_style = 'do'
 let g:ruby_indent_assignment_style = 'variable'
 
 "neoterm
+let g:neoterm_shell = '/usr/bin/zsh'
 let g:neoterm_default_mod = 'vertical'
 let g:neoterm_term_per_tab = 1 " Different terminal for each tab
 let g:neoterm_auto_repl_cmd = 0 " Do not launch rails console on TREPLsend
