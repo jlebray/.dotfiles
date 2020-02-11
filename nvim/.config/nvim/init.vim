@@ -79,7 +79,6 @@ call plug#begin('~/.config/nvim/plugged')
 " ❤️
 Plug 'junegunn/fzf', { 'dir': '/home/johan/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
-Plug '/usr/local/opt/fzf'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-speeddating'
@@ -162,7 +161,6 @@ Plug 'vim-scripts/SyntaxRange'
 
 " Deoplete plugins
 Plug 'deoplete-plugins/deoplete-tag'
-Plug 'ncm2/float-preview.nvim'
 
 " Tmux integration
 Plug 'christoomey/vim-tmux-navigator'
@@ -251,7 +249,7 @@ let g:ale_fixers = {
 \   'javascript': ['eslint'],
 \   'javascript.jsx': ['eslint'],
 \   'jsx': ['eslint'],
-\   'json': ['fixjson'],
+\   'json': ['jq'],
 \   'ruby': ['rubocop'],
 \   'rust': ['rustfmt'],
 \   'python': ['autopep8'],
@@ -318,8 +316,8 @@ let test#strategy = "neoterm"
 
 "Fuzzy finder configuration
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
-let g:fzf_files_options =
-  \ '--preview "(coderay {} || cat {}) 2> /dev/null | head -'.&lines.'"'
+let g:fzf_files_options = '--preview "(coderay {} || cat {}) 2> /dev/null | head -'.&lines.'"'
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.8 } }
 
 " CTRL-A CTRL-Q to select all and build quickfix list
 function! s:build_quickfix_list(lines)
@@ -327,7 +325,6 @@ function! s:build_quickfix_list(lines)
   copen
   cc
 endfunction
-
 
 let g:fzf_action = {
   \ 'ctrl-q': function('s:build_quickfix_list'),
