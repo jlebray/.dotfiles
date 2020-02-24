@@ -253,6 +253,7 @@ let g:ale_fixers = {
 \   'ruby': ['rubocop'],
 \   'rust': ['rustfmt'],
 \   'python': ['autopep8'],
+\   'cpp': ['clang-format'],
 \}
 
 let g:ale_enabled = 1
@@ -434,11 +435,14 @@ endfun
 
 "Switch project
 function! s:open_project(project)
+  tabnew
   execute "tcd ~/code/" . a:project
   execute "TabooRename " . a:project
 endfunction
 function! s:open_file_in_project(project)
+  tabnew
   execute "tcd ~/code/" . a:project
+  execute "TabooRename " . a:project
   call fzf#vim#files(".")
   call feedkeys('i')
 endfunction
@@ -447,7 +451,8 @@ function! s:switch_project()
   try
     call fzf#run({
     \ 'source':  'ls ~/code/',
-    \ 'sink':    function('s:open_project')})
+    \ 'window': { 'width': 0.9, 'height': 0.8 },
+    \ 'sink':    function('s:open_file_in_project')})
   catch
     echohl WarningMsg
     echom v:exception
