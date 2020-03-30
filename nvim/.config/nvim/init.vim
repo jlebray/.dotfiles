@@ -1,6 +1,6 @@
 " NeoVim init - Johan Le Bray
 "  {{{ ===== SETTINGS
-syntax on
+syntax enable
 set autoindent
 set autoread
 set breakindent
@@ -129,7 +129,6 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-rhubarb'
 Plug 'mhinz/vim-signify'
 Plug 'junegunn/gv.vim'
-Plug 'jreybert/vimagit'
 
 " HTML
 Plug 'rstacruz/sparkup', {'rtp': 'vim/'}
@@ -153,8 +152,11 @@ Plug 'reedes/vim-pencil'
 
 " Themes
 Plug 'jlebray/spacemacs-theme.vim'
-Plug 'joshdick/onedark.vim'
+Plug 'rakr/vim-one' " light
+Plug 'joshdick/onedark.vim' " dark
 Plug 'pgdouyon/vim-yin-yang'
+Plug 'altercation/vim-colors-solarized'
+Plug 'https://gitlab.com/protesilaos/tempus-themes-vim.git'
 
 " Prez
 Plug 'vim-scripts/SyntaxRange'
@@ -248,6 +250,7 @@ let g:neoterm_auto_repl_cmd = 0 " Do not launch rails console on TREPLsend
 let g:ale_fixers = {
 \   'javascript': ['eslint'],
 \   'javascript.jsx': ['eslint'],
+\   'typescript': ['tslint'],
 \   'jsx': ['eslint'],
 \   'json': ['jq'],
 \   'ruby': ['rubocop'],
@@ -266,9 +269,6 @@ let g:ale_echo_msg_format = '%linter% — %s'
 let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
 let g:qs_first_occurrence_highlight_color = '#afff5f'
 let g:qs_second_occurrence_highlight_color = '#5fffff'
-
-"Magit
-let g:magit_default_sections = ['info', 'commit', 'staged', 'unstaged']
 
 "statusline
 let g:lightline = {
@@ -314,6 +314,7 @@ let g:WhiplashProjectsDir = "~/code/"
 
 "vim-test
 let test#strategy = "neoterm"
+let g:test#python#pytest#executable = 'python -m pytest'
 
 "Fuzzy finder configuration
 "let g:fzf_files_options = '--preview \"(highlight -O ansi {} || cat {}) 2> /dev/null | head -'.&lines.'\"'
@@ -367,9 +368,15 @@ let g:rails_projections = {
 " }}}
 " }}}
 " {{{ ===== THEME
-set background=dark
+" set background=dark
 " colorscheme spacemacs-theme
-colorscheme onedark
+" colorscheme onedark
+
+" set background=light
+" colorscheme solarized
+" colorscheme one
+colorscheme tempus_totus
+
 highlight ExtraWhitespace guibg=#990000 ctermbg=red
 highlight TermCursor ctermfg=red guifg=red
 
@@ -482,6 +489,18 @@ function! DeleteInactiveBufs()
     echomsg nWipeouts . ' buffer(s) wiped out'
 endfunction
 command! DeleteInactiveBufs :call DeleteInactiveBufs()
+
+function! s:toggle_note()
+  let line = getline(".")
+  if line =~ "TODO"
+    execute "normal! ^wcESTARTED \<C-R>=strftime('%FT%T')\<CR>\<ESC>"
+  elseif line =~ "STARTED"
+    execute "normal! ^wcEDONE\<ESC>Ea -> \<C-R>=strftime('%FT%T')\<CR>\<ESC>"
+  elseif line =~ "DONE"
+    execute "normal! ^wc4ETODO\<ESC>"
+  endif
+endfunction
+command! ToggleNote call s:toggle_note()
 
 " }}}
 " {{{ ===== MAPPINGS
@@ -600,7 +619,7 @@ nnoremap <silent> <leader>l :ArgWrap<CR>
 "Function keys
 nnoremap <F2> :tabnew<cr>
 nnoremap <F3> :Ttoggle<cr>
-nnoremap <F4> :Magit<cr>
+nnoremap <F4> :Gstatus<cr>
 nnoremap <F5> :Tags<cr>
 nnoremap <F6> :Dispatch<cr>
 nnoremap <F7> :Make<cr>
