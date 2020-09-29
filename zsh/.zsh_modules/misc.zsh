@@ -247,6 +247,11 @@ function prompt_python_version() {
   fi
 }
 
+function regen_tags() {
+  /usr/local/bin/ctags -f js_tags -R --languages=javascript app/javascript ./node_modules
+  /usr/local/bin/ctags -f ruby_tags -R --languages=ruby --exclude=.git --exclude=log . $(bundle list --paths)
+}
+
 # function load:nvm() {
 #   export NVM_DIR="$HOME/.nvm"
 #   [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"  # This loads nvm

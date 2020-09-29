@@ -10,6 +10,7 @@ NODE_VERSION="14"
 # Install packages
 brew install rbenv pyenv postgresql diff-so-fancy rg zsh nvm pyenv-virtualenv
 brew tap heroku/brew && brew install heroku
+brew install --HEAD universal-ctags/universal-ctags/universal-ctags
 
 # Add ZSH to shells
 if ! grep -q "/usr/local/bin/zsh" /etc/shells; then
