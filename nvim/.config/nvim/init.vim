@@ -23,7 +23,7 @@ set nobackup
 set noswapfile
 set number
 set relativenumber
-set rtp+=/home/johan/.fzf
+set rtp+=/Users/johan/.fzf
 set ruler
 set scrolloff=10
 set sessionoptions+=tabpages,globals
@@ -32,7 +32,7 @@ set shiftwidth=2
 set smartcase
 set smarttab
 set softtabstop=2
-set shell=/bin/zsh
+set shell=/usr/local/bin/zsh
 set spelllang=fr
 set splitbelow
 set splitright
@@ -68,10 +68,10 @@ augroup filetypes_stuff
 augroup END
 
 "python
-let g:python3_host_prog = '/home/johan/.pyenv/versions/neovim/bin/python3'
-let g:python_host_prog = '/home/johan/.pyenv/versions/neovim2/bin/python'
-let g:ruby_host_prog = '/home/johan/.rbenv/shims/neovim-ruby-host'
-let g:node_host_prog = '/home/johan/.nvm/versions/node/v14.12.0/bin/neovim-node-host'
+let g:python3_host_prog = '/Users/johan/.pyenv/versions/neovim3/bin/python3'
+let g:python_host_prog = '/Users/johan/.pyenv/versions/neovim2/bin/python'
+let g:ruby_host_prog = '/Users/johan/.rbenv/shims/neovim-ruby-host'
+let g:node_host_prog = '/Users/johan/.nvm/versions/node/v14.13.0/bin/neovim-node-host'
 " }}}
 " {{{ ===== PLUGINS
 " {{{ Sources
@@ -234,7 +234,7 @@ let g:dispatch_compilers = {
 
 "neosnippets
 let g:neosnippet#enable_snipmate_compatibility = 1
-let g:neosnippet#snippets_directory = "/home/johan/.config/nvim/plugged/snippets/neosnippets/"
+let g:neosnippet#snippets_directory = "/Users/johan/.config/nvim/plugged/snippets/neosnippets/"
 imap <C-e>     <Plug>(neosnippet_expand_or_jump)
 smap <C-e>     <Plug>(neosnippet_expand_or_jump)
 xmap <C-e>     <Plug>(neosnippet_expand_target)
@@ -260,7 +260,7 @@ let g:ruby_indent_block_style = 'do'
 let g:ruby_indent_assignment_style = 'variable'
 
 "neoterm
-let g:neoterm_shell = '/bin/zsh'
+let g:neoterm_shell = '/usr/local/bin/zsh'
 let g:neoterm_default_mod = 'vertical'
 let g:neoterm_term_per_tab = 1 " Different terminal for each tab
 let g:neoterm_auto_repl_cmd = 0 " Do not launch rails console on TREPLsend
