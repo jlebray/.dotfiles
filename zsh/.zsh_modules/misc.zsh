@@ -9,39 +9,27 @@ function htail() {
 }
 
 function hstaging() {
-  heroku run "$@" -a shopmium-staging
-}
-
-function htest() {
-  heroku run "$@" -a shopmium-sandbox
+  heroku run "$@" -a jeancaisse-staging
 }
 
 function hprod() {
-  heroku run "$@" -a shopmium
+  heroku run "$@" -a jeancaisse-prod
 }
 
 function hdstaging() {
-  heroku run:detached "$@" -a shopmium-staging | htail
-}
-
-function hdtest() {
-  heroku run:detached "$@" -a shopmium-sandbox | htail
+  heroku run:detached "$@" -a jeancaisse-staging | htail
 }
 
 function hdprod() {
-  heroku run:detached "$@" -a shopmium | htail
+  heroku run:detached "$@" -a jeancaisse-prod | htail
 }
 
 function rcstaging() {
-  heroku run rails console -a shopmium-staging
-}
-
-function rctest() {
-  heroku run rails console -a shopmium-sandbox
+  heroku run rails console -a jeancaisse-staging
 }
 
 function rcprod() {
-  heroku run rails console -a shopmium
+  heroku run rails console -a jeancaisse-prod
 }
 
 function gar() {

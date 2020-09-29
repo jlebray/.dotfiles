@@ -1,11 +1,13 @@
 " NeoVim init - Johan Le Bray
 "  {{{ ===== SETTINGS
+lang fr_FR.UTF-8
 syntax enable
 set autoindent
 set autoread
 set breakindent
 set cc=80,100
 set complete=.,w,b,u,t,i
+set confirm
 set cursorline
 set dictionary='/usr/dict/words'
 set expandtab
@@ -30,11 +32,12 @@ set shiftwidth=2
 set smartcase
 set smarttab
 set softtabstop=2
-set shell=/bin/bash
+set shell=/bin/zsh
 set spelllang=fr
 set splitbelow
 set splitright
 set tabstop=2
+set tags=./tags,tags;
 set timeoutlen=500 ttimeoutlen=0
 set title
 set undodir=~/.vim/undo
@@ -54,16 +57,21 @@ augroup filetypes_stuff
   autocmd BufRead,BufNewFile *.{ecr} set filetype=html
   autocmd BufRead,BufNewFile *.{vim} set foldmethod=marker
   autocmd FileType ruby set iskeyword+=!,?
+  autocmd FileType javascript set iskeyword-=!,?
+  autocmd FileType ruby set tags=./ruby_tags,ruby_tags;./tags,tags;
+  autocmd FileType javascript set tags=./js_tags,js_tags;./tags,tags;
   autocmd BufRead,BufNewFile *.{tex} set spell breakindent linebreak
   autocmd BufRead,BufNewFile *.scss.css setfiletype scss
   autocmd BufRead,BufNewFile *.less setfiletype css
   autocmd BufRead,BufNewFile *.{rest} set filetype=rest " for vim-rest-console
+  autocmd CompleteDone * silent! pclose! " Remove preview after completion
 augroup END
 
 "python
 let g:python3_host_prog = '/home/johan/.pyenv/versions/neovim/bin/python3'
 let g:python_host_prog = '/home/johan/.pyenv/versions/neovim2/bin/python'
 let g:ruby_host_prog = '/home/johan/.rbenv/shims/neovim-ruby-host'
+let g:node_host_prog = '/home/johan/.nvm/versions/node/v14.12.0/bin/neovim-node-host'
 " }}}
 " {{{ ===== PLUGINS
 " {{{ Sources
@@ -77,7 +85,7 @@ endif
 call plug#begin('~/.config/nvim/plugged')
 
 " ❤️
-Plug 'junegunn/fzf', { 'dir': '/home/johan/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'tpope/vim-vinegar'
 Plug 'tpope/vim-eunuch'
@@ -86,8 +94,11 @@ Plug 'tpope/vim-dadbod'
 Plug 'tpope/vim-dispatch'
 Plug 'tpope/vim-projectionist'
 
-" statusline
-Plug 'itchyny/lightline.vim'
+" LSP Experiment
+" Plug 'neovim/nvim-lspconfig'
+" Plug 'Shougo/deoplete-lsp'
+" Plug 'nvim-lua/lsp-status.nvim'
+" Plug 'nvim-lua/diagnostic-nvim'
 
 " text manipulation
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' } " Fuzzy completion
@@ -117,9 +128,15 @@ Plug 'gcmt/taboo.vim'
 Plug 'xolox/vim-misc'
 Plug 'xolox/vim-notes'
 
+" deoplete
+Plug 'ncm2/float-preview.nvim'
+
 " snippets
 Plug 'Shougo/neosnippet'
 Plug 'jlebray/snippets'
+
+" statusline
+Plug 'itchyny/lightline.vim'
 
 " errors
 Plug 'w0rp/ale'
@@ -138,9 +155,9 @@ Plug 'ap/vim-css-color'
 " Ruby
 Plug 'nelstrom/vim-textobj-rubyblock'
 Plug 'tpope/vim-rails'
+Plug 'ecomba/vim-ruby-refactoring', {'branch': 'main'}
 
 " Python
-Plug 'szymonmaszke/vimpyter'
 Plug '5long/pytest-vim-compiler'
 
 " Clojure
@@ -170,6 +187,9 @@ Plug 'christoomey/vim-tmux-navigator'
 " HTTP
 Plug 'diepm/vim-rest-console'
 
+" Drool
+Plug 'vim-scripts/drools.vim'
+
 call plug#end()
 " }}}
 " {{{ Options
@@ -187,11 +207,13 @@ let g:surround_61 = "<%= \r %>"
 
 "deoplete
 let g:deoplete#enable_at_startup=1
-let g:deoplete#enable_refresh_always=0
-let g:deoplete#enable_smart_case=1
-let g:deoplete#file#enable_buffer_path=1
 let g:deoplete#buffer#require_same_filetype=0
 let g:deoplete#tag#cache_limit_size = 5000000
+call deoplete#custom#option({
+      \ 'refresh_always': v:false,
+      \ 'smart_case': v:true,
+      \ 'enable_buffer_path': v:true,
+      \ })
 
 call deoplete#custom#option('max_list', 30)
 
@@ -199,9 +221,11 @@ call deoplete#custom#source('tag', 'rank', 10)
 call deoplete#custom#source('ale', 'rank', 15)
 call deoplete#custom#source('buffer', 'rank', 9998)
 call deoplete#custom#source('neosnippet', 'rank', 9999)
+call deoplete#custom#source('lsp', 'rank', 500)
 
 call deoplete#custom#var('buffer', { 'require_same_filetype': v:false })
 let g:float_preview#docked = 0
+set completeopt-=preview
 
 "vim-dispatch
 let g:dispatch_compilers = {
@@ -209,39 +233,34 @@ let g:dispatch_compilers = {
       \ 'py.test': 'pytest'}
 
 "neosnippets
+let g:neosnippet#enable_snipmate_compatibility = 1
 let g:neosnippet#snippets_directory = "/home/johan/.config/nvim/plugged/snippets/neosnippets/"
-function! s:neosnippet_complete()
-  if neosnippet#expandable()
-    return "\<Plug>(neosnippet_expand)"
-  else
-    if pumvisible()
-      return "\<c-n>"
-    else
-      return "\<tab>"
-    endif
-  endif
-endfunction
+imap <C-e>     <Plug>(neosnippet_expand_or_jump)
+smap <C-e>     <Plug>(neosnippet_expand_or_jump)
+xmap <C-e>     <Plug>(neosnippet_expand_target)
 
-function! s:neosnippet_jump()
-  if neosnippet#jumpable()
-    return "\<Plug>(neosnippet_jump)"
-  endif
-endfunction
+imap <expr><TAB>
+ \ pumvisible() ? "\<C-n>" :
+ \ neosnippet#expandable_or_jumpable() ?
+ \    "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
+smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
+\ "\<Plug>(neosnippet_expand_or_jump)" : "\<TAB>"
 
-imap <expr><TAB> <SID>neosnippet_complete()
-imap <expr><C-j> <SID>neosnippet_jump()
-smap <expr><C-j> <SID>neosnippet_jump()
+" For conceal markers.
+if has('conceal')
+  set conceallevel=2 concealcursor=niv
+endif
 
 "argwrap
 let g:argwrap_padded_braces = '{'
-let g:argwrap_tail_comma_braces = '[{'
+let g:argwrap_tail_comma_braces = '[{('
 
 "Ruby
 let g:ruby_indent_block_style = 'do'
 let g:ruby_indent_assignment_style = 'variable'
 
 "neoterm
-let g:neoterm_shell = '/usr/bin/zsh'
+let g:neoterm_shell = '/bin/zsh'
 let g:neoterm_default_mod = 'vertical'
 let g:neoterm_term_per_tab = 1 " Different terminal for each tab
 let g:neoterm_auto_repl_cmd = 0 " Do not launch rails console on TREPLsend
@@ -262,7 +281,7 @@ let g:ale_fixers = {
 let g:ale_enabled = 1
 let g:ale_set_highlights = 0
 let g:ale_fix_on_save = 0
-let g:ale_ruby_rubocop_executable = 'bundle'
+let g:ale_ruby_rubocop_executable = 'rubocop'
 let g:ale_echo_msg_format = '%linter% — %s'
 
 "highlight
@@ -275,12 +294,17 @@ let g:lightline = {
       \ 'colorscheme': 'one',
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
-      \             [ 'readonly', 'filename', 'modified' ] ]
+      \             [ 'readonly', 'filename', 'modified' ] ],
+      \   'right': [['lsp_status'],
+      \             [ 'lineinfo' ],
+      \             [ 'percent' ],
+      \             [ 'fileformat', 'fileencoding', 'filetype' ] ]
       \ },
       \ 'component_function': {
       \   'fileformat': 'LightlineFileformat',
       \   'filetype': 'LightlineFiletype',
-      \   'filename': 'LightlineFilename'
+      \   'filename': 'LightlineFilename',
+      \   'lsp_status': 'LspStatus'
       \ },
       \ }
 
@@ -336,35 +360,36 @@ let g:fzf_action = {
 
 let $FZF_DEFAULT_OPTS = '--bind ctrl-a:select-all'
 
-" Vimpyter
-autocmd Filetype ipynb nmap <silent><Leader>b :VimpyterInsertPythonBlock<CR>
-autocmd Filetype ipynb nmap <silent><Leader>j :VimpyterStartJupyter<CR>
-
 "vim-notes
 let g:notes_directories = ['~/.notes']
 
 "vim-rails
 let g:rails_projections = {
-      \  "app/controllers/*_controller.rb": {
+      \  "app/controllers/*.rb": {
       \      "test": [
       \        "spec/requests/{}_spec.rb",
-      \        "spec/controllers/{}_controller_spec.rb",
-      \        "test/controllers/{}_controller_test.rb"
+      \        "spec/controllers/{}_spec.rb",
+      \        "test/controllers/{}_test.rb"
       \      ],
       \      "alternate": [
       \        "spec/requests/{}_spec.rb",
-      \        "spec/controllers/{}_controller_spec.rb",
-      \        "test/controllers/{}_controller_test.rb"
+      \        "spec/controllers/{}_spec.rb",
+      \        "test/controllers/{}_test.rb"
       \      ],
       \   },
       \   "spec/requests/*_spec.rb": {
       \      "command": "request",
-      \      "alternate": "app/controllers/{}_controller.rb",
-      \      "template": "require 'rails_helper'\n\n" .
-      \        "RSpec.describe '{}' do\nend",
+      \      "alternate": "app/controllers/{}.rb",
+      \      "template": [
+      \        "# frozen_string_literal: true",
+      \        "",
+      \        "require 'rails_helper'",
+      \        "",
+      \        "describe {camelcase|capitalize|colons} do",
+      \        "end"
+      \      ]
       \   },
       \ }
-
 " }}}
 " }}}
 " {{{ ===== THEME
@@ -375,10 +400,11 @@ let g:rails_projections = {
 " set background=light
 " colorscheme solarized
 " colorscheme one
-colorscheme tempus_totus
+colorscheme tempus_winter
 
 highlight ExtraWhitespace guibg=#990000 ctermbg=red
 highlight TermCursor ctermfg=red guifg=red
+highlight Search gui=bold guibg=red guifg=yellow cterm=bold ctermbg=12 ctermfg=14
 
 " }}}
 " {{{ ===== FUNCTIONS
@@ -451,7 +477,6 @@ function! s:open_file_in_project(project)
   execute "tcd ~/code/" . a:project
   execute "TabooRename " . a:project
   call fzf#vim#files(".")
-  call feedkeys('i')
 endfunction
 
 function! s:switch_project()
@@ -489,18 +514,6 @@ function! DeleteInactiveBufs()
     echomsg nWipeouts . ' buffer(s) wiped out'
 endfunction
 command! DeleteInactiveBufs :call DeleteInactiveBufs()
-
-function! s:toggle_note()
-  let line = getline(".")
-  if line =~ "TODO"
-    execute "normal! ^wcESTARTED \<C-R>=strftime('%FT%T')\<CR>\<ESC>"
-  elseif line =~ "STARTED"
-    execute "normal! ^wcEDONE\<ESC>Ea -> \<C-R>=strftime('%FT%T')\<CR>\<ESC>"
-  elseif line =~ "DONE"
-    execute "normal! ^wc4ETODO\<ESC>"
-  endif
-endfunction
-command! ToggleNote call s:toggle_note()
 
 " }}}
 " {{{ ===== MAPPINGS
@@ -566,10 +579,11 @@ nnoremap <leader>s :w<cr>
 nnoremap <leader>f :Files<cr>
 nnoremap <leader>m :Move <c-R>%
 nnoremap <leader>x :Unlink<cr>
-nnoremap <leader>n :Rg<cr>
+nnoremap <leader>n :Rg<space>
+nnoremap <leader>t :Tags<space>
 nnoremap <leader>u :MundoToggle<cr>
 vnoremap 1 "hy:Rg <C-R>h<cr>
-vnoremap <F5> "hy:Tags <C-R>h<cr>
+vnoremap 2 "hy:Tags <C-R>h<cr>
 
 "Buffers
 nnoremap <leader>b :Buffers<cr>
@@ -596,6 +610,7 @@ nnoremap <leader>gs :Gstatus<cr>
 nnoremap <leader>gc :Gcommit<cr>
 nnoremap <leader>gp :Gpush<cr>
 nnoremap <leader>gb :Gblame<cr>
+nnoremap <leader>gw :Gwrite<cr>
 
 "DB
 nnoremap <leader>q :DB postgres://postgres:4242424242@localhost:5432/pg_development<space>
@@ -613,7 +628,7 @@ nnoremap <leader>oud :PlugUpdate<cr>
 nnoremap <leader>oc  :PlugClean<cr>
 
 "Misc
-nnoremap <silent> <leader>h :nohlsearch<cr><c-l>
+nnoremap <silent> <leader>h :nohlsearch<cr>
 nnoremap <silent> <leader>l :ArgWrap<CR>
 
 "Function keys
@@ -649,6 +664,7 @@ nnoremap <C-]> g<C-]>
 
 nnoremap <Leader>w :FixWhitespace<CR>
 nnoremap <leader><leader> :T<space>
+nnoremap <leader>r :T r<cr>
 " }}}
 " {{{ ===== CUSTOM BLOCKS
 call textobj#user#plugin('erb', {
@@ -665,6 +681,14 @@ call textobj#user#plugin('line', {
 \     'select-a': 'al',
 \     'select-i-function': 'CurrentLineI',
 \     'select-i': 'il',
+\   },
+\ })
+
+call textobj#user#plugin('slashes', {
+\   'regexp': {
+\     'pattern': ['/', '/'],
+\     'select-a': 'aS',
+\     'select-i': 'iS',
 \   },
 \ })
 
@@ -722,4 +746,25 @@ function! s:select_i()
 
   return ['V', start_pos, end_pos]
 endfunction
+" }}}
+" {{{ ===== LSP
+" lua << EOF
+"   local nvim_lsp = require('nvim_lsp')
+"   local on_attach = function(client, bufnr)
+"     -- on_attach so that they don't override bindings in a non-LSP setting
+"     vim.fn.nvim_set_keymap("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", {noremap = true, silent = true})
+"     vim.fn.nvim_set_keymap("n", "gh", "<cmd>lua vim.lsp.buf.hover()<CR>", {noremap = true, silent = true})
+"     vim.fn.nvim_set_keymap("n", "gD", "<cmd>lua vim.lsp.buf.implementation()<CR>", {noremap = true, silent = true})
+"     vim.fn.nvim_set_keymap("n", "<c-m>", "<cmd>lua vim.lsp.buf.signature_help()<CR>", {noremap = true, silent = true})
+"     vim.fn.nvim_set_keymap("n", "1gD", "<cmd>lua vim.lsp.buf.type_definition()<CR>", {noremap = true, silent = true})
+"     vim.fn.nvim_set_keymap("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", {noremap = true, silent = true})
+"     vim.fn.nvim_set_keymap("n", "gR", "<cmd>lua vim.lsp.buf.rename()<CR>", {noremap = true, silent = true})
+"     vim.fn.nvim_set_keymap("n", "g0", "<cmd>lua vim.lsp.buf.document_symbol()<CR>", {noremap = true, silent = true})
+"     vim.fn.nvim_set_keymap("n", "gW", "<cmd>lua vim.lsp.buf.workspace_symbol()<CR>", {noremap = true, silent = true})
+"   end
+" 
+"   nvim_lsp.tsserver.setup{
+"     on_attach = on_attach,
+"   }
+" EOF
 " }}}

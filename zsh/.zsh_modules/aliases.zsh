@@ -8,7 +8,7 @@ alias rgm='rails generate migration'
 
 alias fzf='fzf --height 80%'
 
-alias rs='rails server -p 4200 -e development'
+alias rs='rails server -e development'
 alias rc='rails console'
 
 # pbcopy on Linux
