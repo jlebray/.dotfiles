@@ -8,7 +8,7 @@ NODE_VERSION="14"
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
 # Install packages
-brew install rbenv pyenv postgresql diff-so-fancy rg zsh nvm pyenv-virtualenv
+brew install rbenv pyenv postgresql diff-so-fancy rg zsh nvm pyenv-virtualenv redis
 brew tap heroku/brew && brew install heroku
 brew install --HEAD universal-ctags/universal-ctags/universal-ctags
 

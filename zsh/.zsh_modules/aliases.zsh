@@ -12,8 +12,8 @@ alias rs='rails server -e development'
 alias rc='rails console'
 
 # pbcopy on Linux
-alias pbcopy='xsel --clipboard --input'
-alias pbpaste='xsel --clipboard --output'
+# alias pbcopy='xsel --clipboard --input'
+# alias pbpaste='xsel --clipboard --output'
 
 alias g='git'
 alias ga='git add'

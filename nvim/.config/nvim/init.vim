@@ -56,7 +56,7 @@ augroup filetypes_stuff
   autocmd BufRead,BufNewFile *.{arb} set filetype=ruby
   autocmd BufRead,BufNewFile *.{ecr} set filetype=html
   autocmd BufRead,BufNewFile *.{vim} set foldmethod=marker
-  autocmd FileType ruby set iskeyword+=!,?
+  " autocmd FileType ruby set iskeyword+=!,?
   autocmd FileType javascript set iskeyword-=!,?
   autocmd FileType ruby set tags=./ruby_tags,ruby_tags;./tags,tags;
   autocmd FileType javascript set tags=./js_tags,js_tags;./tags,tags;
@@ -276,6 +276,7 @@ let g:ale_fixers = {
 \   'rust': ['rustfmt'],
 \   'python': ['autopep8'],
 \   'cpp': ['clang-format'],
+\   'html': ['prettier'],
 \}
 
 let g:ale_enabled = 1
@@ -283,6 +284,7 @@ let g:ale_set_highlights = 0
 let g:ale_fix_on_save = 0
 let g:ale_ruby_rubocop_executable = 'rubocop'
 let g:ale_echo_msg_format = '%linter% — %s'
+let g:ale_lint_delay=500
 
 "highlight
 let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
@@ -295,22 +297,19 @@ let g:lightline = {
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],
       \             [ 'readonly', 'filename', 'modified' ] ],
-      \   'right': [['lsp_status'],
-      \             [ 'lineinfo' ],
+      \   'right': [[ 'lineinfo' ],
       \             [ 'percent' ],
       \             [ 'fileformat', 'fileencoding', 'filetype' ] ]
       \ },
       \ 'component_function': {
       \   'fileformat': 'LightlineFileformat',
       \   'filetype': 'LightlineFiletype',
-      \   'filename': 'LightlineFilename',
-      \   'lsp_status': 'LspStatus'
+      \   'filename': 'LightlineFilename'
       \ },
       \ }
 
 function! LightlineFilename()
-  let filename = expand('%') !=# '' ? expand('%') : '[No Name]'
-  return filename
+  return expand('%') !=# '' ? expand('%') : '[No Name]'
 endfunction
 
 function! LightlineFileformat()
@@ -389,7 +388,17 @@ let g:rails_projections = {
       \        "end"
       \      ]
       \   },
+      \  "app/*.rb": {
+      \      "test": ["spec/{}_spec.rb"],
+      \      "alternate": ["spec/{}_spec.rb"],
+      \   },
       \ }
+
+" vim-rest-console
+let g:vrc_trigger = '<C-e>'
+
+" Sparkup
+let g:sparkupExecuteMapping = '<C-s>'
 " }}}
 " }}}
 " {{{ ===== THEME

@@ -13,7 +13,7 @@ function hstaging() {
 }
 
 function hprod() {
-  heroku run "$@" -a jeancaisse-prod
+  heroku run "$@" -a jeancaisse-prod-private
 }
 
 function hdstaging() {
@@ -21,7 +21,7 @@ function hdstaging() {
 }
 
 function hdprod() {
-  heroku run:detached "$@" -a jeancaisse-prod | htail
+  heroku run:detached "$@" -a jeancaisse-prod-private | htail
 }
 
 function rcstaging() {
@@ -29,7 +29,7 @@ function rcstaging() {
 }
 
 function rcprod() {
-  heroku run rails console -a jeancaisse-prod
+  heroku run rails console -a jeancaisse-prod-private
 }
 
 function gar() {

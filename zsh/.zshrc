@@ -2,6 +2,9 @@ export PATH="$HOME/.rbenv/bin:$PATH"
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 export NVM_DIR="$HOME/.nvm"
+export EDITOR="nvim"
+
+export NODE_OPTIONS="--experimental-repl-await --max_old_space_size=2048"
 
 autoload -U up-line-or-beginning-search
 autoload -U down-line-or-beginning-search
